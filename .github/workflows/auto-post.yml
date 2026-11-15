@@ -1,0 +1,24 @@
+name: News Auto Poster
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # GitHub Actions-এ ফ্রি ক্রন জবের ক্ষেত্রে প্রতি ৫ মিনিট সর্বনিম্ন রাখা নিরাপদ (ফ্রি সার্ভারে ১ মিনিট রাখলে অনেক সময় ডিলে হতে পারে)।
+  workflow_dispatch:
+
+jobs:
+  run-poster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Run script
+        env:
+          FB_ACCESS_TOKEN: ${{ secrets.FB_ACCESS_TOKEN }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+        run: node your-script.js # আপনার অটো-পোস্ট করার মূল জাভাস্ক্রিপ্ট ফাইলটির নাম
