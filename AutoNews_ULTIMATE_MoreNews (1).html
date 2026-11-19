@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ef4444'/%3E%3Cstop offset='100%25' stop-color='%23f59e0b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M16 20h32v6H16zm0 11h24v5H16zm0 10h28v5H16z' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='43' r='6' fill='%230b1120'/%3E%3C/svg%3E">
+  <title>AutoNews ULTIMATE - স্মার্ট অটো ফেসবুক পেজ ম্যানেজার</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Hind Siliguri', sans-serif; background-color: #0b1120; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen p-3 md:p-6">
+
+  <!-- Header & Admin Connection Bar -->
+  <header class="max-w-7xl mx-auto mb-6">
+    <div class="bg-slate-900 border border-slate-800 p-4 md:p-5 rounded-2xl shadow-xl flex flex-col lg:flex-row justify-between items-center gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs px-2.5 py-0.5 rounded-full font-bold">ULTIMATE AI</span>
+          <h1 class="text-2xl font-bold text-white tracking-tight">অটো নিউজ ও স্মার্ট পেজ পোস্ট ম্যানেজার</h1>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">উন্নত ফিল্টার • চমৎকার ইউনিক ছবি • সেরা খবর নির্বাচন • সম্পূর্ণ পোস্ট ও অটো পাবলিশ</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <!-- পেজের নাম সেটিংস -->
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl">
+          <span class="text-xs text-slate-400">পেজের নাম:</span>
+          <input type="text" id="pageNameInput" value="বাংলা ৩৬০" onchange="savePageName()" class="bg-transparent text-sm font-bold text-red-400 focus:outline-none w-28 border-b border-dashed border-slate-600">
+        </div>
+
+        <!-- ফেসবুক পেজ কানেক্ট বাটন -->
+        <button onclick="openFbModal()" id="fbConnectBtn" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 transition">
+          <span>🔵</span> <span id="fbBtnText">ফেসবুক পেজ কানেক্ট করুন</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- অটো-পোস্ট কন্ট্রোল ও লাইভ কাউন্টডাউন টাইমার বার -->
+    <div id="autoPostControlBar" class="mt-3 bg-slate-900/95 border border-slate-800 p-3.5 rounded-2xl flex flex-col lg:flex-row justify-between items-center gap-3 shadow-md">
+      <div class="flex items-center gap-3">
+        <span id="connectionStatusDot" class="w-3 h-3 rounded-full bg-amber-500"></span>
+        <span id="connectionStatusText" class="text-xs font-semibold text-slate-300">পেজ কানেক্ট করা নেই (উপরের নীল বাটনে ক্লিক করে Page ID ও Token দিন)</span>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-3">
+        <!-- বাংলাদেশ পিক টাইম মোড -->
+        <label class="text-xs text-slate-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-emerald-500/30 cursor-pointer" title="বাংলাদেশ সময় সকাল ৮টা - রাত ১১টা (বেস্ট পিক টাইম: সকাল ৯-১১টা, দুপুর ১-৩টা, বিকেল ৫-৬টা, রাত ৮-১১টা)">
+          <input type="checkbox" id="bdPeakTimeOnly" checked class="accent-emerald-500 cursor-pointer">
+          <span class="font-semibold text-emerald-400">🇧🇩 ডে পিক-টাইম মোড</span>
+        </label>
+
+        <!-- ইন্টারভ্যাল সিলেক্টর -->
+        <label class="text-xs text-slate-400 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+          <span>পোস্ট বিরতি:</span>
+          <select id="autoIntervalSelect" onchange="restartAutoTimerIfRunning()" class="bg-transparent text-amber-400 font-bold text-xs focus:outline-none cursor-pointer">
+            <option value="15" class="bg-slate-900">১৫ সেকেন্ড</option>
+            <option value="30" class="bg-slate-900">৩০ সেকেন্ড</option>
+            <option value="60" selected class="bg-slate-900">১ মিনিট</option>
+            <option value="120" class="bg-slate-900">২ মিনিট</option>
+            <option value="300" class="bg-slate-900">৫ মিনিট</option>
+            <option value="600" class="bg-slate-900">১০ মিনিট</option>
+            <option value="900" class="bg-slate-900">১৫ মিনিট (সর্বোচ্চ)</option>
+          </select>
+        </label>
+
+        <!-- লাইভ কাউন্টডাউন টাইমার -->
+        <div id="countdownBadge" class="hidden bg-slate-950 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl flex items-center gap-2 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span class="text-xs text-slate-300">পরবর্তী পোস্ট:</span>
+          <span id="countdownDisplay" class="text-sm font-mono font-bold text-emerald-400">01:00</span>
+        </div>
+
+        <!-- অটো পোস্ট টগল বাটন -->
+        <button onclick="toggleAutoPost()" id="autoPostToggleBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 transition">
+          ⚡ অটো-পোস্ট: OFF
+        </button>
+      </div>
+    </div>
+
+    <!-- লাইভ অ্যাক্টিভিটি লগ ও ডুপ্লিকেট ফিল্টার স্ট্যাটাস -->
+    <div id="activityLogBox" class="mt-2 bg-slate-950 border border-slate-800/80 px-4 py-2 rounded-xl text-xs text-slate-400 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+      <span id="liveLogText">সিস্টেম প্রস্তুত। উন্নত সংবাদ সংগ্রহ ও ডুপ্লিকেট ফিল্টার চালু আছে...</span>
+      <span id="dedupStatsBadge" class="text-amber-400/90 font-medium">🛡️ ডুপ্লিকেট এভয়েড: ০টি</span>
+    </div>
+
+    <!-- মূল নেভিগেশন ট্যাব -->
+    <div class="flex gap-2 mt-4 max-w-md mx-auto bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+      <button onclick="switchTab('feed')" id="tabFeedBtn" class="flex-1 py-2 rounded-xl text-sm font-bold transition bg-red-600 text-white shadow-md flex items-center justify-center gap-2">
+        📰 বাছাইকৃত তাজা খবর (<span id="unpostedCount">0</span>)
+      </button>
+      <button onclick="switchTab('posted')" id="tabPostedBtn" class="flex-1 py-2 rounded-xl text-sm font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-2">
+        ✅ পোস্ট করা খবর (<span id="postedCount">0</span>)
+      </button>
+    </div>
+
+    <!-- প্রধান ক্যাটাগরি ও সোর্স সেকশন -->
+    <div id="categorySection" class="mt-4 bg-slate-900/80 border border-slate-800 p-3.5 rounded-2xl max-w-7xl mx-auto shadow-md">
+      <div class="flex flex-wrap justify-center gap-2 mb-3">
+        <button onclick="filterCategory('all', event)" class="cat-btn bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition">🔥 সব ক্যাটাগরি (Smart Mix)</button>
+        <button onclick="filterCategory('world', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🌍 আন্তর্জাতিক</button>
+        <button onclick="filterCategory('bd_bn', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🇧🇩 বাংলা নিউজ</button>
+        <button onclick="filterCategory('bd_en', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">📰 ইংরেজি নিউজ BD</button>
+        <button onclick="filterCategory('intl_sports', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">⚽ আন্তর্জাতিক স্পোর্টস</button>
+        <button onclick="filterCategory('intl_cricket', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🏏 আন্তর্জাতিক ক্রিকেট</button>
+        <button onclick="filterCategory('bd_sports', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🏆 বাংলাদেশ স্পোর্টস</button>
+        <button onclick="filterCategory('intl_ent', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🎬 হলিউড ও বিশ্ব বিনোদন</button>
+        <button onclick="filterCategory('bollywood', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🎥 বলিউড ও ভারত</button>
+        <button onclick="filterCategory('bd_ent', event)" class="cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition">🎭 বাংলাদেশ বিনোদন</button>
+      </div>
+
+      <div id="source-buttons" class="flex flex-wrap justify-center gap-1.5 mt-2 max-h-28 overflow-y-auto custom-scroll p-1"></div>
+    </div>
+  </header>
+
+  <!-- প্রধান কনটেন্ট এরিয়া -->
+  <main class="max-w-7xl mx-auto">
+    <div id="loading" class="text-center py-16 text-slate-400 text-lg hidden">
+      <span class="inline-block animate-spin mr-2">⏳</span> সম্পূর্ণ খবর সংগ্রহ, ফিল্টার এবং সমৃদ্ধ করা হচ্ছে...
+    </div>
+
+    <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  </main>
+
+  <!-- ফেসবুক পেজ কানেক্ট মোডাল -->
+  <div id="fbModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button onclick="closeFbModal()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-full flex items-center justify-center font-bold">✕</button>
+      
+      <h2 class="text-xl font-bold text-white flex items-center gap-2">🔵 ফেসবুক পেজ কানেক্ট করুন</h2>
+      <p class="text-xs text-slate-400 mt-1">সরাসরি পেজে ফটো কার্ড ও সম্পূর্ণ পোস্ট করার জন্য আপনার Page ID এবং Page Access Token দিন।</p>
+
+      <div class="mt-4 space-y-3">
+        <div>
+          <label class="text-xs text-slate-300 font-semibold block mb-1">Facebook Page ID:</label>
+          <input type="text" id="fbPageIdInput" placeholder="যেমন: 104589234567890" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div>
+          <label class="text-xs text-slate-300 font-semibold block mb-1">Page Access Token (pages_manage_posts):</label>
+          <textarea id="fbPageTokenInput" rows="3" placeholder="EAABsbCS1iHgBO..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"></textarea>
+        </div>
+
+        <div id="fbVerifyMsg" class="text-xs hidden p-2.5 rounded-xl"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button onclick="verifyAndSaveFbPage()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-xl text-sm shadow-lg transition">
+            ✅ যাচাই ও সেভ করুন
+          </button>
+          <button onclick="disconnectFbPage()" class="bg-slate-800 hover:bg-red-900/60 text-slate-300 font-semibold px-4 py-2.5 rounded-xl text-xs transition">
+            ডিসকানেক্ট
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- সম্পূর্ণ পোস্ট ও ফটো কার্ড অ্যাকশন মোডাল -->
+  <div id="detailModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-3 md:p-6 z-50 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-5 md:p-6 shadow-2xl relative max-h-[92vh] flex flex-col">
+      <button onclick="closeModal()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-full flex items-center justify-center font-bold z-10 transition">✕</button>
+
+      <div class="mb-4 pr-10">
+        <span id="modalBadge" class="text-xs px-2.5 py-1 rounded-md font-bold text-white bg-red-600">ব্রেকিং নিউজ</span>
+        <span id="modalOriginSource" class="text-xs text-amber-400 ml-2 font-medium"></span>
+        <span id="modalQualityScore" class="text-xs text-emerald-400 ml-2 font-semibold"></span>
+        <h2 id="modalTitle" class="text-xl md:text-2xl font-bold text-white mt-2 leading-snug"></h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto custom-scroll pr-1 flex-1">
+        <!-- বাম পাশ: সম্পূর্ণ পোস্ট টেক্সট -->
+        <div class="flex flex-col">
+          <label class="text-xs text-slate-400 font-semibold mb-1 flex justify-between">
+            <span>সম্পূর্ণ ফেসবুক পোস্ট টেক্সট:</span>
+            <span id="copySuccessMsg" class="text-green-400 hidden font-bold">✓ কপি হয়েছে!</span>
+          </label>
+          <textarea id="copyTextArea" rows="12" class="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 text-sm text-slate-200 focus:outline-none focus:border-red-500 font-sans leading-relaxed flex-1 custom-scroll"></textarea>
+          
+          <div class="mt-3 flex gap-2">
+            <button onclick="copyPostText()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+              📋 সম্পূর্ণ লেখা কপি
+            </button>
+            <button onclick="publishCurrentToFacebook()" id="directFbPostBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg transition">
+              🚀 সরাসরি ফেসবুকে পোস্ট করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- ডান পাশ: ইউনিক ফটো কার্ড -->
+        <div class="flex flex-col items-center">
+          <label class="text-xs text-slate-400 font-semibold mb-1 w-full text-left">ইউনিক ফটো কার্ড (1080x1080):</label>
+          <div class="w-full aspect-square bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 relative shadow-inner">
+            <canvas id="photoCanvas" width="1080" height="1080" class="w-full h-full object-contain"></canvas>
+          </div>
+          <button onclick="downloadCard()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition">
+            📥 ফটো কার্ড ডাউনলোড করুন (.PNG)
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-800 flex flex-wrap justify-between items-center gap-3">
+        <span id="modalPostFeedback" class="text-xs text-slate-400">সরাসরি পোস্ট করলে স্বয়ংক্রিয়ভাবে 'পোস্ট করা খবর' তালিকায় চলে যাবে।</span>
+        <button id="markPostBtn" onclick="togglePostStatus()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 px-5 rounded-xl text-xs transition">
+          ✅ মার্ক এজ পোস্ট
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function gFeed(domain, lang = 'en', country = 'US') {
+      return `https://news.google.com/rss/search?q=site:${domain}&hl=${lang}&gl=${country}&ceid=${country}:${lang}`;
+    }
+
+    const sourcesData = {
+      world: [
+        { name: "Reuters", url: gFeed("reuters.com"), badge: "বিশ্ব সংবাদ", color: "#ea580c", isGlobal: true, trust: 10, tag: "#Reuters #আন্তর্জাতিক_সংবাদ" },
+        { name: "BBC News", url: "https://feeds.bbci.co.uk/news/world/rss.xml", badge: "বিশ্ব সংবাদ", color: "#dc2626", isGlobal: true, trust: 10, tag: "#BBCNews #বিশ্ব_সংবাদ" },
+        { name: "AP News", url: gFeed("apnews.com"), badge: "আন্তর্জাতিক", color: "#2563eb", isGlobal: true, trust: 10, tag: "#APNews #বিশ্ব_খবর" },
+        { name: "CNN", url: "http://rss.cnn.com/rss/edition_world.rss", badge: "ব্রেকিং ওয়ার্ল্ড", color: "#b91c1c", isGlobal: true, trust: 9, tag: "#CNN #আন্তর্জাতিক" },
+        { name: "Al Jazeera", url: "https://www.aljazeera.com/xml/rss/all.xml", badge: "বিশ্ব সংবাদ", color: "#d97706", isGlobal: true, trust: 10, tag: "#AlJazeera #বিশ্ব_পরিস্থিতি" },
+        { name: "The Guardian", url: "https://www.theguardian.com/world/rss", badge: "আন্তর্জাতিক", color: "#0369a1", isGlobal: true, trust: 9, tag: "#TheGuardian #বিশ্ব_সংবাদ" },
+        { name: "NY Times", url: "https://rss.nytimes.com/services/xml/rss/nyt/World.xml", badge: "বিশ্ব সংবাদ", color: "#334155", isGlobal: true, trust: 9, tag: "#NYTimes #আন্তর্জাতিক" },
+        { name: "AFP", url: gFeed("afp.com"), badge: "আন্তর্জাতিক", color: "#1d4ed8", isGlobal: true, trust: 9, tag: "#AFP #বিশ্ব_সংবাদ" },
+        { name: "DW News", url: "https://rss.dw.com/rdf/rss-en-world", badge: "ইউরোপ ও বিশ্ব", color: "#0284c7", isGlobal: true, trust: 9, tag: "#DWNews #আন্তর্জাতিক" },
+        { name: "France 24", url: "https://www.france24.com/en/rss", badge: "বিশ্ব সংবাদ", color: "#2563eb", isGlobal: true, trust: 8, tag: "#France24 #বিশ্ব_সংবাদ" },
+        { name: "Sky News", url: "https://feeds.skynews.com/feeds/rss/world.xml", badge: "ব্রেকিং ওয়ার্ল্ড", color: "#be123c", isGlobal: true, trust: 8, tag: "#SkyNews #বিশ্ব_খবর" },
+        { name: "NBC News", url: "https://feeds.nbcnews.com/nbcnews/public/world", badge: "আমেরিকা ও বিশ্ব", color: "#4f46e5", isGlobal: true, trust: 8, tag: "#NBCNews #আন্তর্জাতিক" },
+        { name: "ABC News", url: "https://abcnews.go.com/abcnews/internationalheadlines", badge: "আন্তর্জাতিক", color: "#1e40af", isGlobal: true, trust: 8, tag: "#ABCNews #বিশ্ব_সংবাদ" },
+        { name: "CBS News", url: "https://www.cbsnews.com/latest/rss/world", badge: "বিশ্ব সংবাদ", color: "#1d4ed8", isGlobal: true, trust: 8, tag: "#CBSNews #আন্তর্জাতিক" },
+        { name: "NPR", url: "https://feeds.npr.org/1004/rss.xml", badge: "বিশ্ব সংবাদ", color: "#0f766e", isGlobal: true, trust: 8, tag: "#NPR #বিশ্ব_সংবাদ" },
+        { name: "Washington Post", url: gFeed("washingtonpost.com"), badge: "আমেরিকা ও বিশ্ব", color: "#334155", isGlobal: true, trust: 9, tag: "#WashingtonPost #আন্তর্জাতিক" },
+        { name: "The Economist", url: gFeed("economist.com"), badge: "বিশ্ব অর্থনীতি", color: "#dc2626", isGlobal: true, trust: 9, tag: "#TheEconomist #বিশ্ব_অর্থনীতি" },
+        { name: "Financial Times", url: gFeed("ft.com"), badge: "গ্লোবাল বিজনেস", color: "#be185d", isGlobal: true, trust: 9, tag: "#FinancialTimes #অর্থনীতি" },
+        { name: "Bloomberg", url: gFeed("bloomberg.com"), badge: "বিশ্ব অর্থনীতি", color: "#1e293b", isGlobal: true, trust: 9, tag: "#Bloomberg #গ্লোবাল_নিউজ" },
+        { name: "Euronews", url: "https://www.euronews.com/rss?format=mrss", badge: "ইউরোপ সংবাদ", color: "#0369a1", isGlobal: true, trust: 8, tag: "#Euronews #ইউরোপ" },
+        { name: "TIME", url: "https://time.com/feed/", badge: "আন্তর্জাতিক", color: "#dc2626", isGlobal: true, trust: 8, tag: "#TIME #বিশ্ব_সংবাদ" },
+        { name: "CBC News", url: "https://www.cbc.ca/webfeed/rss/rss-world", badge: "কানাডা ও বিশ্ব", color: "#b91c1c", isGlobal: true, trust: 8, tag: "#CBCNews #আন্তর্জাতিক" },
+        { name: "ABC Australia", url: "https://www.abc.net.au/news/feed/51120/rss.xml", badge: "অস্ট্রেলিয়া ও বিশ্ব", color: "#047857", isGlobal: true, trust: 8, tag: "#ABCAustralia #বিশ্ব_সংবাদ" },
+        { name: "NHK World", url: "https://www3.nhk.or.jp/rss/news/cat6.xml", badge: "এশিয়া ও বিশ্ব", color: "#0284c7", isGlobal: true, trust: 8, tag: "#NHKWorld #জাপান #এশিয়া" },
+        { name: "The Hindu", url: "https://www.thehindu.com/news/international/feeder/default.rss", badge: "দক্ষিণ এশিয়া ও বিশ্ব", color: "#1e3a8a", isGlobal: true, trust: 8, tag: "#TheHindu #আন্তর্জাতিক" }
+      ],
+      bd_bn: [
+        { name: "প্রথম আলো", url: gFeed("prothomalo.com", "bn", "BD"), badge: "শীর্ষ সংবাদ", color: "#dc2626", isGlobal: false, trust: 10, tag: "#প্রথম_আলো #বাংলাদেশ" },
+        { name: "বাংলাদেশ প্রতিদিন", url: gFeed("bd-pratidin.com", "bn", "BD"), badge: "তাজা খবর", color: "#b91c1c", isGlobal: false, trust: 9, tag: "#বাংলাদেশ_প্রতিদিন #তাজা_খবর" },
+        { name: "কালের কণ্ঠ", url: gFeed("kalerkantho.com", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#1d4ed8", isGlobal: false, trust: 9, tag: "#কালের_কণ্ঠ #বাংলাদেশ" },
+        { name: "যুগান্তর", url: gFeed("jugantor.com", "bn", "BD"), badge: "শীর্ষ সংবাদ", color: "#047857", isGlobal: false, trust: 9, tag: "#যুগান্তর #তাজা_খবর" },
+        { name: "দৈনিক ইত্তেফাক", url: gFeed("ittefaq.com.bd", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#0369a1", isGlobal: false, trust: 9, tag: "#ইত্তেফাক #বাংলাদেশ" },
+        { name: "সমকাল", url: gFeed("samakal.com", "bn", "BD"), badge: "তাজা খবর", color: "#dc2626", isGlobal: false, trust: 9, tag: "#সমকাল #বাংলাদেশ" },
+        { name: "মানবজমিন", url: gFeed("mzamin.com", "bn", "BD"), badge: "ব্রেকিং নিউজ", color: "#be123c", isGlobal: false, trust: 8, tag: "#মানবজমিন #তাজা_খবর" },
+        { name: "দৈনিক ইনকিলাব", url: gFeed("dailyinqilab.com", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#065f46", isGlobal: false, trust: 8, tag: "#ইনকিলাব #বাংলাদেশ" },
+        { name: "জনকণ্ঠ", url: gFeed("dailyjanakantha.com", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#1e40af", isGlobal: false, trust: 8, tag: "#জনকণ্ঠ #বাংলাদেশ" },
+        { name: "কালবেলা", url: gFeed("kalbela.com", "bn", "BD"), badge: "ব্রেকিং নিউজ", color: "#dc2626", isGlobal: false, trust: 9, tag: "#কালবেলা #তাজা_খবর" },
+        { name: "দেশ রূপান্তর", url: gFeed("deshrupantor.com", "bn", "BD"), badge: "শীর্ষ সংবাদ", color: "#b91c1c", isGlobal: false, trust: 8, tag: "#দেশ_রূপান্তর #বাংলাদেশ" },
+        { name: "জাগোনিউজ২৪", url: gFeed("jagonews24.com", "bn", "BD"), badge: "অনলাইন ব্রেকিং", color: "#059669", isGlobal: false, trust: 9, tag: "#জাগোনিউজ২৪ #তাজা_খবর" },
+        { name: "বাংলা ট্রিবিউন", url: gFeed("banglatribune.com", "bn", "BD"), badge: "শীর্ষ সংবাদ", color: "#dc2626", isGlobal: false, trust: 9, tag: "#বাংলা_ট্রিবিউন #বাংলাদেশ" },
+        { name: "বাংলানিউজ২৪", url: gFeed("banglanews24.com", "bn", "BD"), badge: "ব্রেকিং নিউজ", color: "#0284c7", isGlobal: false, trust: 8, tag: "#বাংলানিউজ২৪ #বাংলাদেশ" },
+        { name: "রাইজিংবিডি", url: gFeed("risingbd.com", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#047857", isGlobal: false, trust: 8, tag: "#রাইজিংবিডি #বাংলাদেশ" },
+        { name: "বার্তা২৪", url: gFeed("barta24.com", "bn", "BD"), badge: "তাজা খবর", color: "#2563eb", isGlobal: false, trust: 8, tag: "#বার্তা২৪ #বাংলাদেশ" },
+        { name: "সারাবাংলা", url: gFeed("sarabangla.net", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#dc2626", isGlobal: false, trust: 8, tag: "#সারাবাংলা #বাংলাদেশ" },
+        { name: "বিডি২৪লাইভ", url: gFeed("bd24live.com", "bn", "BD"), badge: "অনলাইন নিউজ", color: "#1d4ed8", isGlobal: false, trust: 7, tag: "#বিডি২৪লাইভ #বাংলাদেশ" },
+        { name: "আমাদের সময়", url: gFeed("dainikamadershomoy.com", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#0f766e", isGlobal: false, trust: 8, tag: "#আমাদের_সময় #বাংলাদেশ" },
+        { name: "যায়যায়দিন", url: gFeed("jaijaidinbd.com", "bn", "BD"), badge: "জাতীয় সংবাদ", color: "#4338ca", isGlobal: false, trust: 8, tag: "#যায়যায়দিন #বাংলাদেশ" },
+        { name: "ঢাকা টাইমস২৪", url: gFeed("dhakatimes24.com", "bn", "BD"), badge: "তাজা খবর", color: "#b91c1c", isGlobal: false, trust: 7, tag: "#ঢাকা_টাইমস #বাংলাদেশ" },
+        { name: "চ্যানেল আই অনলাইন", url: gFeed("channelionline.com", "bn", "BD"), badge: "টিভি নিউজ", color: "#0284c7", isGlobal: false, trust: 9, tag: "#চ্যানেল_আই #বাংলাদেশ" },
+        { name: "সময় টিভি", url: gFeed("somoynews.tv", "bn", "BD"), badge: "ব্রেকিং টিভি", color: "#dc2626", isGlobal: false, trust: 10, tag: "#সময়_টিভি #তাজা_খবর" },
+        { name: "যমুনা টিভি", url: gFeed("jamuna.tv", "bn", "BD"), badge: "ব্রেকিং টিভি", color: "#1d4ed8", isGlobal: false, trust: 10, tag: "#যমুনা_টিভি #তাজা_খবর" }
+      ],
+      bd_en: [
+        { name: "The Daily Star", url: "https://www.thedailystar.net/frontpage/rss.xml", badge: "BD English", color: "#dc2626", isGlobal: true, trust: 10, tag: "#DailyStar #বাংলাদেশ" },
+        { name: "Dhaka Tribune", url: gFeed("dhakatribune.com", "en", "BD"), badge: "BD News", color: "#0284c7", isGlobal: true, trust: 9, tag: "#DhakaTribune #বাংলাদেশ" },
+        { name: "bdnews24", url: gFeed("bdnews24.com", "en", "BD"), badge: "Breaking BD", color: "#b91c1c", isGlobal: true, trust: 9, tag: "#bdnews24 #বাংলাদেশ" },
+        { name: "The Business Standard", url: gFeed("tbsnews.net", "en", "BD"), badge: "Business & BD", color: "#047857", isGlobal: true, trust: 9, tag: "#TBSNews #অর্থনীতি" },
+        { name: "New Age", url: gFeed("newagebd.net", "en", "BD"), badge: "National", color: "#1e40af", isGlobal: true, trust: 8, tag: "#NewAge #বাংলাদেশ" },
+        { name: "Financial Express BD", url: gFeed("thefinancialexpress.com.bd", "en", "BD"), badge: "Economy", color: "#0f766e", isGlobal: true, trust: 8, tag: "#FinancialExpress #অর্থনীতি" },
+        { name: "Daily Sun", url: gFeed("daily-sun.com", "en", "BD"), badge: "BD English", color: "#d97706", isGlobal: true, trust: 8, tag: "#DailySun #বাংলাদেশ" },
+        { name: "Bangladesh Today", url: gFeed("thebangladeshtoday.com", "en", "BD"), badge: "BD News", color: "#334155", isGlobal: true, trust: 7, tag: "#BangladeshToday #বাংলাদেশ" },
+        { name: "Prothom Alo English", url: gFeed("en.prothomalo.com", "en", "BD"), badge: "Top News", color: "#dc2626", isGlobal: true, trust: 9, tag: "#ProthomAlo #বাংলাদেশ" },
+        { name: "Business Post BD", url: gFeed("businesspostbd.com", "en", "BD"), badge: "Business", color: "#1d4ed8", isGlobal: true, trust: 8, tag: "#BusinessPost #ব্যবসা" }
+      ],
+      intl_sports: [
+        { name: "ESPN", url: "https://www.espn.com/espn/rss/news", badge: "বিশ্ব ক্রীড়া", color: "#dc2626", isGlobal: true, trust: 10, tag: "#ESPN #খেলাধুলা" },
+        { name: "BBC Sport", url: "https://feeds.bbci.co.uk/sport/rss.xml", badge: "স্পোর্টস নিউজ", color: "#eab308", isGlobal: true, trust: 10, tag: "#BBCSport #খেলাধুলা" },
+        { name: "Sky Sports", url: gFeed("skysports.com"), badge: "ফুটবল ও ক্রীড়া", color: "#1d4ed8", isGlobal: true, trust: 9, tag: "#SkySports #ফুটবল" },
+        { name: "The Athletic", url: gFeed("nytimes.com/athletic"), badge: "স্পোর্টস", color: "#1e293b", isGlobal: true, trust: 9, tag: "#TheAthletic #খেলাধুলা" },
+        { name: "CBS Sports", url: "https://www.cbssports.com/rss/headlines/", badge: "বিশ্ব ক্রীড়া", color: "#0284c7", isGlobal: true, trust: 8, tag: "#CBSSports #খেলাধুলা" },
+        { name: "Fox Sports", url: gFeed("foxsports.com"), badge: "স্পোর্টস", color: "#1e40af", isGlobal: true, trust: 8, tag: "#FoxSports #খেলাধুলা" },
+        { name: "Sports Illustrated", url: gFeed("si.com"), badge: "বিশ্ব ক্রীড়া", color: "#b91c1c", isGlobal: true, trust: 8, tag: "#SportsIllustrated #খেলাধুলা" },
+        { name: "Olympics.com", url: gFeed("olympics.com"), badge: "অলিম্পিক", color: "#0369a1", isGlobal: true, trust: 9, tag: "#Olympics #খেলাধুলা" },
+        { name: "Eurosport", url: gFeed("eurosport.com"), badge: "ইউরোস্পোর্ট", color: "#1d4ed8", isGlobal: true, trust: 8, tag: "#Eurosport #খেলাধুলা" },
+        { name: "Goal.com", url: gFeed("goal.com"), badge: "ফুটবল নিউজ", color: "#059669", isGlobal: true, trust: 9, tag: "#Goal #ফুটবল #Football" },
+        { name: "Marca English", url: gFeed("marca.com/en"), badge: "ফুটবল ও লা লিগা", color: "#dc2626", isGlobal: true, trust: 8, tag: "#Marca #ফুটবল" },
+        { name: "Sporting News", url: gFeed("sportingnews.com"), badge: "বিশ্ব ক্রীড়া", color: "#0f766e", isGlobal: true, trust: 8, tag: "#SportingNews #খেলাধুলা" },
+        { name: "Formula 1", url: "https://www.formula1.com/en/latest/all.xml", badge: "ফর্মুলা ওয়ান", color: "#e11d48", isGlobal: true, trust: 9, tag: "#F1 #Formula1 #রেসিং" }
+      ],
+      intl_cricket: [
+        { name: "ESPNcricinfo", url: "https://www.espncricinfo.com/rss/content/story/feeds/0.xml", badge: "ক্রিকেট নিউজ", color: "#0284c7", isGlobal: true, trust: 10, tag: "#ESPNcricinfo #ক্রিকেট" },
+        { name: "Cricbuzz", url: gFeed("cricbuzz.com"), badge: "ক্রিকেট আপডেট", color: "#059669", isGlobal: true, trust: 10, tag: "#Cricbuzz #ক্রিকেট" },
+        { name: "ICC Cricket", url: gFeed("icc-cricket.com"), badge: "আইসিসি নিউজ", color: "#1d4ed8", isGlobal: true, trust: 10, tag: "#ICC #ক্রিকেট" },
+        { name: "Wisden", url: gFeed("wisden.com"), badge: "ক্রিকেট বিশ্লেষণ", color: "#047857", isGlobal: true, trust: 9, tag: "#Wisden #ক্রিকেট" },
+        { name: "Cricket Australia", url: gFeed("cricket.com.au"), badge: "অস্ট্রেলিয়া ক্রিকেট", color: "#d97706", isGlobal: true, trust: 8, tag: "#CricketAustralia #ক্রিকেট" },
+        { name: "BCCI", url: gFeed("bcci.tv"), badge: "ভারতীয় ক্রিকেট", color: "#1e40af", isGlobal: true, trust: 8, tag: "#BCCI #ক্রিকেট" }
+      ],
+      bd_sports: [
+        { name: "BDCricTime", url: gFeed("bdcrictime.com", "bn", "BD"), badge: "বাংলাদেশ ক্রিকেট", color: "#059669", isGlobal: false, trust: 10, isSports: true, isBdSports: true, tag: "#BDCricTime #বাংলাদেশ_ক্রিকেট" },
+        { name: "CricketFrenzy", url: gFeed("cricketfrenzy.com", "bn", "BD"), badge: "ক্রিকেট নিউজ", color: "#047857", isGlobal: false, trust: 10, isSports: true, isBdSports: true, tag: "#CricketFrenzy #ক্রিকেট" },
+        { name: "প্রথম আলো খেলা", url: gFeed("prothomalo.com/sports", "bn", "BD"), badge: "বাংলাদেশ খেলাধুলা", color: "#dc2626", isGlobal: false, trust: 10, isSports: true, isBdSports: true, tag: "#প্রথম_আলো #খেলাধুলা" },
+        { name: "বাংলাদেশ ফুটবল (BFF ও লিগ)", url: "https://news.google.com/rss/search?q=বাংলাদেশ+ফুটবল+OR+হামজা+চৌধুরী+OR+জামাল+ভূঁইয়া+OR+বাফুফে&hl=bn&gl=BD&ceid=BD:bn", badge: "বাংলাদেশ ফুটবল", color: "#15803d", isGlobal: false, trust: 10, isSports: true, isBdSports: true, tag: "#বাংলাদেশ_ফুটবল #ফুটবল" },
+        { name: "বাংলাদেশ ক্রিকেট ও খেলোয়াড়", url: "https://news.google.com/rss/search?q=বাংলাদেশ+ক্রিকেট+OR+সাকিব+OR+তামিম+OR+লিটন+OR+তাসকিন+OR+শান্ত+OR+মুস্তাফিজ&hl=bn&gl=BD&ceid=BD:bn", badge: "টাইগার ক্রিকেট", color: "#059669", isGlobal: false, trust: 10, isSports: true, isBdSports: true, tag: "#বাংলাদেশ_ক্রিকেট #টাইগার্স" },
+        { name: "জাগোনিউজ খেলা", url: gFeed("jagonews24.com/sports", "bn", "BD"), badge: "খেলার খবর", color: "#059669", isGlobal: false, trust: 9, isSports: true, isBdSports: true, tag: "#জাগোনিউজ #খেলাধুলা" },
+        { name: "রাইজিংবিডি খেলা", url: gFeed("risingbd.com/sports", "bn", "BD"), badge: "খেলাধুলা", color: "#0d9488", isGlobal: false, trust: 9, isSports: true, isBdSports: true, tag: "#খেলাধুলা #বাংলাদেশ" },
+        { name: "সময় টিভি খেলা", url: gFeed("somoynews.tv/categories/sports", "bn", "BD"), badge: "খেলার সংবাদ", color: "#dc2626", isGlobal: false, trust: 10, isSports: true, isBdSports: true, tag: "#সময়_টিভি #খেলাধুলা" }
+      ],
+      intl_ent: [
+        { name: "Variety", url: "https://variety.com/feed/", badge: "হলিউড নিউজ", color: "#9333ea", isGlobal: true, trust: 10, tag: "#Variety #হলিউড #বিনোদন" },
+        { name: "Hollywood Reporter", url: "https://www.hollywoodreporter.com/feed/", badge: "হলিউড", color: "#dc2626", isGlobal: true, trust: 10, tag: "#HollywoodReporter #সিনেমা" },
+        { name: "Deadline", url: "https://deadline.com/feed/", badge: "বিনোদন ও ফিল্ম", color: "#1e293b", isGlobal: true, trust: 9, tag: "#Deadline #হলিউড" },
+        { name: "Entertainment Weekly", url: gFeed("ew.com"), badge: "বিনোদন", color: "#db2777", isGlobal: true, trust: 8, tag: "#EntertainmentWeekly #বিনোদন" },
+        { name: "People", url: gFeed("people.com"), badge: "সেলিব্রেটি", color: "#e11d48", isGlobal: true, trust: 9, tag: "#People #সেলিব্রেটি" },
+        { name: "IMDb News", url: gFeed("imdb.com/news"), badge: "মুভি আপডেট", color: "#d97706", isGlobal: true, trust: 8, tag: "#IMDb #সিনেমা" },
+        { name: "Billboard", url: "https://www.billboard.com/feed/", badge: "মিউজিক ও গান", color: "#4f46e5", isGlobal: true, trust: 9, tag: "#Billboard #মিউজিক" },
+        { name: "Rolling Stone", url: "https://www.rollingstone.com/feed/", badge: "মিউজিক ও কালচার", color: "#b91c1c", isGlobal: true, trust: 8, tag: "#RollingStone #বিনোদন" },
+        { name: "Vulture", url: gFeed("vulture.com"), badge: "পপ কালচার", color: "#7c3aed", isGlobal: true, trust: 8, tag: "#Vulture #বিনোদন" },
+        { name: "E! Online", url: gFeed("eonline.com"), badge: "সেলিব্রেটি গসিপ", color: "#ec4899", isGlobal: true, trust: 8, tag: "#EOnline #সেলিব্রেটি" },
+        { name: "CinemaBlend", url: gFeed("cinemablend.com"), badge: "সিনেমা ও সিরিজ", color: "#0284c7", isGlobal: true, trust: 8, tag: "#CinemaBlend #মুভি" },
+        { name: "IndieWire", url: "https://www.indiewire.com/feed/", badge: "ফিল্ম ও ওটিটি", color: "#0f766e", isGlobal: true, trust: 8, tag: "#IndieWire #সিনেমা" }
+      ],
+      bollywood: [
+        { name: "Pinkvilla", url: gFeed("pinkvilla.com", "en", "IN"), badge: "বলিউড গসিপ", color: "#ec4899", isGlobal: true, trust: 9, tag: "#Pinkvilla #বলিউড" },
+        { name: "Bollywood Hungama", url: gFeed("bollywoodhungama.com", "en", "IN"), badge: "বলিউড নিউজ", color: "#dc2626", isGlobal: true, trust: 9, tag: "#BollywoodHungama #বলিউড" },
+        { name: "Filmfare", url: gFeed("filmfare.com", "en", "IN"), badge: "ফিল্মফেয়ার", color: "#be185d", isGlobal: true, trust: 9, tag: "#Filmfare #বলিউড" },
+        { name: "India Today Movies", url: gFeed("indiatoday.in/movies", "en", "IN"), badge: "ভারতীয় সিনেমা", color: "#b91c1c", isGlobal: true, trust: 9, tag: "#IndiaToday #বলিউড" },
+        { name: "TOI Entertainment", url: gFeed("timesofindia.indiatimes.com/entertainment", "en", "IN"), badge: "বলিউড ও টিভি", color: "#9333ea", isGlobal: true, trust: 8, tag: "#TOI #বলিউড" },
+        { name: "NDTV Movies", url: gFeed("ndtv.com/entertainment", "en", "IN"), badge: "বিনোদন", color: "#0284c7", isGlobal: true, trust: 9, tag: "#NDTV #বলিউড" },
+        { name: "Koimoi", url: gFeed("koimoi.com", "en", "IN"), badge: "বক্স অফিস", color: "#d97706", isGlobal: true, trust: 8, tag: "#Koimoi #বক্স_অফিস" },
+        { name: "Filmibeat", url: gFeed("filmibeat.com", "en", "IN"), badge: "ভারতীয় বিনোদন", color: "#7c3aed", isGlobal: true, trust: 8, tag: "#Filmibeat #বলিউড" }
+      ],
+      bd_ent: [
+        { name: "প্রথম আলো বিনোদন", url: gFeed("prothomalo.com/entertainment", "bn", "BD"), badge: "বিনোদন", color: "#db2777", isGlobal: false, trust: 10, tag: "#প্রথম_আলো #বিনোদন" },
+        { name: "বাংলানিউজ বিনোদন", url: gFeed("banglanews24.com/entertainment", "bn", "BD"), badge: "শোবিজ", color: "#9333ea", isGlobal: false, trust: 8, tag: "#বাংলানিউজ #বিনোদন" },
+        { name: "জাগোনিউজ বিনোদন", url: gFeed("jagonews24.com/entertainment", "bn", "BD"), badge: "বিনোদন", color: "#e11d48", isGlobal: false, trust: 9, tag: "#জাগোনিউজ #বিনোদন" },
+        { name: "চ্যানেল আই বিনোদন", url: gFeed("channelionline.com/category/entertainment", "bn", "BD"), badge: "শোবিজ ও নাটক", color: "#0284c7", isGlobal: false, trust: 9, tag: "#চ্যানেল_আই #বিনোদন" },
+        { name: "সময় টিভি বিনোদন", url: gFeed("somoynews.tv/categories/entertainment", "bn", "BD"), badge: "বিনোদন", color: "#dc2626", isGlobal: false, trust: 9, tag: "#সময়_টিভি #বিনোদন" },
+        { name: "কালের কণ্ঠ বিনোদন", url: gFeed("kalerkantho.com/entertainment", "bn", "BD"), badge: "রঙের মেলা", color: "#7c3aed", isGlobal: false, trust: 8, tag: "#কালের_কণ্ঠ #বিনোদন" },
+        { name: "বাংলা ট্রিবিউন বিনোদন", url: gFeed("banglatribune.com/entertainment", "bn", "BD"), badge: "বিনোদন", color: "#be185d", isGlobal: false, trust: 8, tag: "#বাংলা_ট্রিবিউন #বিনোদন" }
+      ]
+    };
+
+    let currentTab = 'feed';
+    let allFetchedNews = [];
+    let currentSelectedNews = null;
+    let postedNewsStore = JSON.parse(localStorage.getItem('posted_news_store') || '[]');
+    let pageName = localStorage.getItem('my_news_page_name') || 'বাংলা ৩৬০';
+    let avoidedDuplicatesCount = 0;
+
+    let fbConfig = JSON.parse(localStorage.getItem('fb_page_config') || 'null');
+    let autoPostActive = false;
+    let countdownInterval = null;
+    let secondsRemaining = 0;
+    let isPostingInProgress = false;
+
+    window.onload = () => {
+      document.getElementById('pageNameInput').value = pageName;
+      updateFbStatusUI();
+      updateBadges();
+      filterCategory('all');
+    };
+
+    function logActivity(msg) {
+      const time = new Date().toLocaleTimeString('bn-BD');
+      document.getElementById('liveLogText').innerText = `[${time}] ${msg}`;
+    }
+
+    function savePageName() {
+      pageName = document.getElementById('pageNameInput').value.trim() || 'বাংলা ৩৬০';
+      localStorage.setItem('my_news_page_name', pageName);
+      if (currentSelectedNews) openNewsDetail(currentSelectedNews);
+    }
+
+    function getTodayFormattedDate() {
+      const now = new Date();
+      return now.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function extractKeywords(text) {
+      const stopWords = new Set(['এবং', 'ও', 'করে', 'করা', 'হয়েছে', 'হয়', 'থেকে', 'জন্য', 'নিয়ে', 'বলেছেন', 'জানিয়েছেন', 'দিয়ে', 'এই', 'সেই', 'তার', 'তাদের', 'the', 'and', 'to', 'of', 'in', 'a', 'is', 'for', 'on', 'with', 'as', 'at', 'by']);
+      return text
+        .toLowerCase()
+        .replace(/[^\u0980-\u09FFa-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 2 && !stopWords.has(w));
+    }
+
+    function calculateSimilarity(titleA, titleB) {
+      const wordsA = extractKeywords(titleA);
+      const wordsB = extractKeywords(titleB);
+      if (wordsA.length === 0 || wordsB.length === 0) return 0;
+
+      const setA = new Set(wordsA);
+      const setB = new Set(wordsB);
+      let intersection = 0;
+      setA.forEach(w => { if (setB.has(w)) intersection++; });
+
+      const union = new Set([...setA, ...setB]).size;
+      const jaccard = intersection / union;
+      const overlapRatio = intersection / Math.min(setA.size, setB.size);
+
+      return Math.max(jaccard, overlapRatio * 0.85);
+    }
+
+    function isBangladeshSportsNews(item) {
+      const text = `${item.title} ${item.description} ${item.badge} ${item.originSource}`.toLowerCase();
+      const bdKeywords = ['বাংলাদেশ', 'টাইগার', 'বিসিবি', 'বাফুফে', 'বিপিএল', 'সাকিব', 'তামিম', 'মুশফিক', 'মাহমুদউল্লাহ', 'লিটন', 'তাসকিন', 'মুস্তাফিজ', 'নাজমুল', 'শান্ত', 'মেহেদী', 'মিরাজ', 'হৃদয়', 'রিশাদ', 'নাহিদ', 'হামজা', 'জামাল ভূঁইয়া', 'সাবিনা', 'ঋতুপর্ণা', 'bangladesh', 'tigers', 'bcb', 'bff', 'bpl', 'shakib', 'tamim', 'litton', 'taskin', 'mustafiz', 'hamza choudhury', 'jamal bhuyan'];
+      const sportsKeywords = ['ক্রিকেট', 'ফুটবল', 'খেলা', 'ম্যাচ', 'টুর্নামেন্ট', 'গোল', 'উইকেট', 'সেঞ্চুরি', 'অধিনায়ক', 'স্কোয়াড', 'সিরিজ', 'বিশ্বকাপ', 'এশিয়া কাপ', 'cricket', 'football', 'match', 'goal', 'wicket', 'tournament', 'sports'];
+      const hasBd = bdKeywords.some(k => text.includes(k));
+      const hasSport = item.isSports || item.isBdSports || sportsKeywords.some(k => text.includes(k));
+      return hasBd && hasSport;
+    }
+
+    function isGeneralSportsNews(item) {
+      const text = `${item.title} ${item.description} ${item.badge} ${item.originSource}`.toLowerCase();
+      const sportsKeywords = ['ক্রিকেট', 'ফুটবল', 'খেলা', 'ম্যাচ', 'টুর্নামেন্ট', 'গোল', 'উইকেট', 'সেঞ্চুরি', 'ফিফা', 'আইসিসি', 'মেসি', 'রোনালদো', 'নেইমার', 'কোহলি', 'রোহিত', 'cricket', 'football', 'sports', 'fifa', 'icc', 'messi', 'ronaldo', 'premier league', 'champions league'];
+      return item.isSports || sportsKeywords.some(k => text.includes(k));
+    }
+
+    function calculateNewsQualityScore(item) {
+      let score = 0;
+      score += (item.trust || 8) * 10;
+      score += Math.min(item.description.length / 5, 70);
+      if (item.title.length >= 20 && item.title.length <= 115) score += 20;
+      if (item.hasRealImage) score += 40;
+
+      // খেলার খবরকে সবসময় বেশি প্রাধান্য দেওয়া হবে (বিশেষ করে বাংলাদেশের ক্রিকেট, ফুটবল ও খেলোয়াড়দের খবর)
+      if (isBangladeshSportsNews(item) || item.isBdSports) {
+        score += 180; // সর্বোচ্চ অগ্রাধিকার: বাংলাদেশের ক্রিকেট ও ফুটবল
+      } else if (isGeneralSportsNews(item)) {
+        score += 110; // দ্বিতীয় সর্বোচ্চ অগ্রাধিকার: আন্তর্জাতিক খেলাধুলা
+      }
+
+      return Math.round(score);
+    }
+
+    // বাংলাদেশ সময় (Asia/Dhaka) অনুযায়ী দিনের বেলার বেস্ট পিক-টাইম চেকার
+    function getBangladeshPeakTimeInfo() {
+      const now = new Date();
+      const bdTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Dhaka' });
+      const bdDate = new Date(bdTimeStr);
+      const hour = bdDate.getHours();
+      const minute = bdDate.getMinutes();
+
+      // রাত ১১:৩০ থেকে সকাল ০৭:৩০ পর্যন্ত অফ-পিক (ঘুমের সময়) — দিনের বেলা ০৭:৩০ - ২৩:৩০ সক্রিয়
+      const isDaytimeActive = (hour > 7 || (hour === 7 && minute >= 30)) && (hour < 23 || (hour === 23 && minute <= 30));
+
+      // সুপার পিক-টাইম স্লট (বাংলাদেশে ফেসবুক অডিয়েন্স সবচেয়ে বেশি সক্রিয় থাকে):
+      // ১) সকাল ০৮:৩০ - ১১:৩০ (সকালের চা ও অফিস শুরুর সময়)
+      // ২) দুপুর ০১:০০ - ০৩:৩০ (লাঞ্চ ও দুপুরের বিরতি)
+      // ৩) বিকেল ০৫:০০ - ০৭:০০ (অফিস ছুটি ও সন্ধ্যার আড্ডা)
+      // ৪) রাত ০৮:০০ - ১১:১৫ (রাতের প্রাইম টাইম)
+      let slotName = "সাধারণ দিনের সময়";
+      let isSuperPeak = false;
+
+      if ((hour === 8 && minute >= 30) || (hour >= 9 && hour <= 10) || (hour === 11 && minute <= 30)) {
+        isSuperPeak = true;
+        slotName = "সকালের পিক-টাইম (০৮:৩০ - ১১:৩০)";
+      } else if ((hour >= 13 && hour <= 14) || (hour === 15 && minute <= 30)) {
+        isSuperPeak = true;
+        slotName = "দুপুরের পিক-টাইম (০১:০০ - ০৩:৩০)";
+      } else if (hour >= 17 && hour < 19) {
+        isSuperPeak = true;
+        slotName = "বিকেল/সন্ধ্যার পিক-টাইম (০৫:০০ - ০৭:০০)";
+      } else if ((hour >= 20 && hour <= 22) || (hour === 23 && minute <= 15)) {
+        isSuperPeak = true;
+        slotName = "রাতের প্রাইম পিক-টাইম (০৮:০০ - ১১:১৫)";
+      }
+
+      return { isDaytimeActive, isSuperPeak, slotName, hour, minute };
+    }
+
+    function deduplicateAndSelectBestNews(incomingList) {
+      let uniqueBestList = [];
+      let localAvoided = 0;
+
+      for (const candidate of incomingList) {
+        candidate.qualityScore = calculateNewsQualityScore(candidate);
+
+        const alreadyPostedMatch = postedNewsStore.find(posted => 
+          posted.id === candidate.id || calculateSimilarity(posted.title, candidate.title) >= 0.42
+        );
+
+        if (alreadyPostedMatch) {
+          localAvoided++;
+          continue;
+        }
+
+        const existingIndex = uniqueBestList.findIndex(existing => 
+          existing.id === candidate.id || calculateSimilarity(existing.title, candidate.title) >= 0.42
+        );
+
+        if (existingIndex === -1) {
+          uniqueBestList.push(candidate);
+        } else {
+          localAvoided++;
+          if (candidate.qualityScore > uniqueBestList[existingIndex].qualityScore) {
+            uniqueBestList[existingIndex] = candidate;
+          }
+        }
+      }
+
+      avoidedDuplicatesCount += localAvoided;
+      document.getElementById('dedupStatsBadge').innerText = `🛡️ ডুপ্লিকেট এভয়েড: ${avoidedDuplicatesCount}টি`;
+      
+      return uniqueBestList.sort((a, b) => b.qualityScore - a.qualityScore);
+    }
+
+    function formatSecondsToMMSS(totalSec) {
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function toggleAutoPost() {
+      if (!fbConfig || !fbConfig.accessToken) {
+        alert("অটো-পোস্ট চালু করার আগে দয়া করে আপনার ফেসবুক পেজ কানেক্ট করুন।");
+        openFbModal();
+        return;
+      }
+
+      autoPostActive = !autoPostActive;
+      const btn = document.getElementById('autoPostToggleBtn');
+      const badge = document.getElementById('countdownBadge');
+
+      if (autoPostActive) {
+        btn.innerText = "⚡ অটো-পোস্ট: ON";
+        btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg transition";
+        badge.classList.remove('hidden');
+
+        const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
+        secondsRemaining = intervalSec;
+        document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
+        logActivity(`অটো-পোস্ট চালু হয়েছে।`);
+
+        startCountdownLoop();
+      } else {
+        btn.innerText = "⚡ অটো-পোস্ট: OFF";
+        btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 transition";
+        badge.classList.add('hidden');
+        clearInterval(countdownInterval);
+        logActivity("অটো-পোস্ট বন্ধ করা হয়েছে।");
+      }
+    }
+
+    function restartAutoTimerIfRunning() {
+      if (autoPostActive) {
+        const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
+        secondsRemaining = intervalSec;
+        document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
+      }
+    }
+
+    function startCountdownLoop() {
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(async () => {
+        if (!autoPostActive) return;
+
+        if (isPostingInProgress) {
+          document.getElementById('countdownDisplay').innerText = "পোস্ট হচ্ছে...";
+          return;
+        }
+
+        secondsRemaining--;
+
+        if (secondsRemaining <= 0) {
+          isPostingInProgress = true;
+          document.getElementById('countdownDisplay').innerText = "পোস্ট হচ্ছে...";
+          try {
+            await runAutoPostCycle();
+          } finally {
+            isPostingInProgress = false;
+            secondsRemaining = parseInt(document.getElementById('autoIntervalSelect').value, 10);
+          }
+        }
+
+        document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(Math.max(0, secondsRemaining));
+      }, 1000);
+    }
+
+    async function runAutoPostCycle() {
+      if (!autoPostActive || !fbConfig) return;
+
+      const peakOnly = document.getElementById('bdPeakTimeOnly')?.checked;
+      const peakInfo = getBangladeshPeakTimeInfo();
+
+      if (peakOnly && !peakInfo.isDaytimeActive) {
+        logActivity("🌙 এখন বাংলাদেশের গভীর রাত (অফ-পিক টাইম)। সকাল ০৭:৩০-এ পিক-টাইম শুরু হলে অটো-পোস্ট চালু হবে।");
+        return;
+      }
+
+      allFetchedNews = deduplicateAndSelectBestNews(allFetchedNews);
+      renderNewsGrid();
+
+      const nextNews = allFetchedNews[0];
+
+      if (!nextNews) {
+        logActivity("নতুন খেলার ও তাজা খবর সংগ্রহ করা হচ্ছে...");
+        await fetchAllCategoriesNews();
+        return;
+      }
+
+      const priorityTag = isBangladeshSportsNews(nextNews) ? "🇧🇩🏏⚽ বাংলাদেশ স্পোর্টস অগ্রাধিকার" : (isGeneralSportsNews(nextNews) ? "⚽ স্পোর্টস অগ্রাধিকার" : "📰 শীর্ষ সংবাদ");
+      logActivity(`🚀 [${peakInfo.slotName} | ${priorityTag}] পোস্ট হচ্ছে: "${nextNews.title.substring(0, 40)}..."`);
+      await postNewsItemToFacebook(nextNews, true);
+    }
+
+    function openFbModal() {
+      document.getElementById('fbModal').classList.remove('hidden');
+      if (fbConfig) {
+        document.getElementById('fbPageIdInput').value = fbConfig.pageId || '';
+        document.getElementById('fbPageTokenInput').value = fbConfig.accessToken || '';
+      }
+    }
+
+    function closeFbModal() {
+      document.getElementById('fbModal').classList.add('hidden');
+    }
+
+    async function verifyAndSaveFbPage() {
+      const pageId = document.getElementById('fbPageIdInput').value.trim();
+      const accessToken = document.getElementById('fbPageTokenInput').value.trim();
+      const msgBox = document.getElementById('fbVerifyMsg');
+
+      if (!pageId || !accessToken) {
+        msgBox.className = "text-xs p-2.5 rounded-xl bg-red-950 text-red-300 border border-red-800 block";
+        msgBox.innerText = "অনুগ্রহ করে Page ID এবং Page Access Token উভয়ই প্রদান করুন।";
+        return;
+      }
+
+      msgBox.className = "text-xs p-2.5 rounded-xl bg-blue-950 text-blue-300 border border-blue-800 block";
+      msgBox.innerText = "⏳ যাচাই করা হচ্ছে...";
+
+      try {
+        const res = await fetch(`https://graph.facebook.com/v20.0/${pageId}?fields=name,access_token&access_token=${encodeURIComponent(accessToken)}`);
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error.message);
+
+        fbConfig = {
+          pageId: data.id || pageId,
+          pageTitle: data.name || pageName,
+          accessToken: data.access_token || accessToken
+        };
+        localStorage.setItem('fb_page_config', JSON.stringify(fbConfig));
+
+        if (data.name) {
+          pageName = data.name;
+          document.getElementById('pageNameInput').value = pageName;
+          localStorage.setItem('my_news_page_name', pageName);
+        }
+
+        msgBox.className = "text-xs p-2.5 rounded-xl bg-emerald-950 text-emerald-300 border border-emerald-800 block";
+        msgBox.innerText = `✅ সফলভাবে কানেক্ট হয়েছে: ${fbConfig.pageTitle}`;
+        
+        updateFbStatusUI();
+        setTimeout(() => closeFbModal(), 1000);
+      } catch (err) {
+        msgBox.className = "text-xs p-2.5 rounded-xl bg-red-950 text-red-300 border border-red-800 block";
+        msgBox.innerText = `❌ ত্রুটি: ${err.message}`;
+      }
+    }
+
+    function disconnectFbPage() {
+      localStorage.removeItem('fb_page_config');
+      fbConfig = null;
+      if (autoPostActive) toggleAutoPost();
+      updateFbStatusUI();
+      closeFbModal();
+    }
+
+    function updateFbStatusUI() {
+      const dot = document.getElementById('connectionStatusDot');
+      const text = document.getElementById('connectionStatusText');
+      const btnText = document.getElementById('fbBtnText');
+
+      if (fbConfig && fbConfig.accessToken) {
+        dot.className = "w-3 h-3 rounded-full bg-emerald-500 animate-pulse";
+        text.innerHTML = `কানেক্টেড পেজ: <strong class="text-emerald-400">${fbConfig.pageTitle}</strong>`;
+        btnText.innerText = "পেজ সেটিংস (Connected)";
+      } else {
+        dot.className = "w-3 h-3 rounded-full bg-amber-500";
+        text.innerText = "পেজ কানেক্ট করা নেই (উপরের নীল বাটনে ক্লিক করে Page ID ও Token দিন)";
+        btnText.innerText = "ফেসবুক পেজ কানেক্ট করুন";
+      }
+    }
+
+    // সম্পূর্ণ পোস্ট টেক্সট প্রস্তুতকারক (সোর্স বা ক্যাটেগরি নেই; শেষে বাংলাদেশ ও বাংলাভাষীদের জনপ্রিয় হ্যাশট্যাগ)
+    function buildPolishedCaption(item) {
+      const cleanTitle = item.title.replace(/^["']|["']$/g, '').trim();
+      let cleanDesc = item.description.trim();
+
+      if (!cleanDesc || cleanDesc.length < 30 || cleanDesc === cleanTitle) {
+        cleanDesc = `${cleanTitle} সম্পর্কে বিস্তারিত তথ্য ও সর্বশেষ আপডেট নিচে তুলে ধরা হলো। এই ঘটনায় সংশ্লিষ্ট মহলে ব্যাপক আলোচনার সৃষ্টি হয়েছে।`;
+      }
+
+      const sentences = cleanDesc.split(/(?<=[।!?])\s+/).filter(s => s.trim().length > 5);
+      let formattedBody = sentences.length >= 2 ? sentences.join('\n\n') : `${cleanDesc}\n\nএ বিষয়ে আরও বিস্তারিত জানতে এবং সর্বশেষ আপডেট পেতে আমাদের সাথেই থাকুন।`;
+
+      const pageTag = `#${pageName.replace(/[^\u0980-\u09FFa-zA-Z0-9]+/g, '_')}`.replace(/^_+|_+$/g, '');
+      const sportsExtraTags = isBangladeshSportsNews(item)
+        ? `#বাংলাদেশ_ক্রিকেট #বাংলাদেশ_ফুটবল #খেলাধুলা #খেলার_খবর #টাইগার্স`
+        : (isGeneralSportsNews(item) ? `#খেলাধুলা #খেলার_খবর #ক্রিকেট #ফুটবল` : ``);
+      const hashTags = `${sportsExtraTags} #বাংলাদেশ #সংবাদ #তাজা_খবর #ব্রেকিং_নিউজ #বাংলা_নিউজ #সর্বশেষ_সংবাদ #আজকের_খবর #BDNews ${pageTag ? pageTag : ''}`.replace(/\s+/g, ' ').trim();
+
+      return `${cleanTitle}\n\n${formattedBody}\n\n━━━━━━━━━━━━━━\n📅 ${getTodayFormattedDate()} | ${pageName}\n\n${hashTags}`;
+    }
+
+    // প্রতিবার ইউনিক ও টপিক-ভিত্তিক ছবি নির্বাচনের ট্র্যাকার (যাতে একই ছবি একাধিক খবরে না আসে)
+    let usedImageUrls = new Set();
+
+    const topicImagePools = {
+      cricket: [
+        "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1080&q=80",
+        "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=1080&q=80",
+        "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=1080&q=80",
+        "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1080&q=80",
+        "https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=1080&q=80"
+      ],
+      football: [
+        "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1080&q=80",
+        "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=1080&q=80",
+        "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=1080&q=80",
+        "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=1080&q=80",
+        "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=1080&q=80"
+      ],
+      economy: [
+        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1080&q=80",
+        "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=1080&q=80",
+        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1080&q=80",
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1080&q=80",
+        "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1080&q=80"
+      ],
+      education: [
+        "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1080&q=80",
+        "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1080&q=80",
+        "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1080&q=80",
+        "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1080&q=80"
+      ],
+      tech: [
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1080&q=80",
+        "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1080&q=80",
+        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=1080&q=80",
+        "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1080&q=80"
+      ],
+      market_food: [
+        "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1080&q=80",
+        "https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=1080&q=80",
+        "https://images.unsplash.com/photo-1518843875459-f738682238a6?w=1080&q=80",
+        "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=1080&q=80"
+      ],
+      crime_law: [
+        "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1080&q=80",
+        "https://images.unsplash.com/photo-1453728013993-6d66e9c9123a?w=1080&q=80",
+        "https://images.unsplash.com/photo-1505664194779-8beaceb93744?w=1080&q=80",
+        "https://images.unsplash.com/photo-1590012314607-cda9d9b699ae?w=1080&q=80"
+      ],
+      entertainment: [
+        "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1080&q=80",
+        "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1080&q=80",
+        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=1080&q=80",
+        "https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=1080&q=80"
+      ],
+      world: [
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1080&q=80",
+        "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=1080&q=80",
+        "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=1080&q=80",
+        "https://images.unsplash.com/photo-1521295121783-8a321d551ad2?w=1080&q=80"
+      ],
+      general: [
+        "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1080&q=80",
+        "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=1080&q=80",
+        "https://images.unsplash.com/photo-1586339949916-3e9457bef6d3?w=1080&q=80",
+        "https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?w=1080&q=80",
+        "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1080&q=80",
+        "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1080&q=80",
+        "https://images.unsplash.com/photo-1444653614773-995cb1ef9efa?w=1080&q=80",
+        "https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1080&q=80",
+        "https://images.unsplash.com/photo-1572949645841-094f3a9c4c94?w=1080&q=80",
+        "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=1080&q=80",
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1080&q=80",
+        "https://images.unsplash.com/photo-1577495508048-b635879837f1?w=1080&q=80"
+      ]
+    };
+
+    function pickUniqueFromPool(pool, seedStr) {
+      let hash = 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        hash = ((hash << 5) - hash) + seedStr.charCodeAt(i);
+        hash |= 0;
+      }
+      const startIdx = Math.abs(hash) % pool.length;
+      for (let offset = 0; offset < pool.length; offset++) {
+        const candidate = pool[(startIdx + offset) % pool.length];
+        if (!usedImageUrls.has(candidate)) {
+          usedImageUrls.add(candidate);
+          return candidate;
+        }
+      }
+      // যদি ওই পুলের সব ছবি ব্যবহৃত হয়ে যায়, তবে general পুল থেকে অব্যবহৃত ছবি নেবে
+      for (const fallback of topicImagePools.general) {
+        if (!usedImageUrls.has(fallback)) {
+          usedImageUrls.add(fallback);
+          return fallback;
+        }
+      }
+      // একদম সব শেষ হয়ে গেলে ইউনিক সিগনেচারসহ ছবি দেবে যাতে ব্রাউজার ও কার্ডে আলাদা দেখায়
+      const chosen = pool[startIdx];
+      return `${chosen}&sig=${Math.abs(hash)}`;
+    }
+
+    function getSmartDefaultImage(badge, title = "") {
+      const text = (badge + " " + title).toLowerCase();
+      let pool = topicImagePools.general;
+
+      if (text.includes('ক্রিকেট') || text.includes('cricket') || text.includes('বিপিএল') || text.includes('সাকিব') || text.includes('তামিম') || text.includes('লিটন') || text.includes('তাসকিন')) {
+        pool = topicImagePools.cricket;
+      } else if (text.includes('ফুটবল') || text.includes('football') || text.includes('goal') || text.includes('মেসি') || text.includes('রোনালদো') || text.includes('হামজা') || text.includes('বাফুফে')) {
+        pool = topicImagePools.football;
+      } else if (text.includes('ব্যাংক') || text.includes('শিক্ষাবৃত্তি') || text.includes('অর্থনীতি') || text.includes('business') || text.includes('market') || text.includes('টাকা') || text.includes('শেয়ার')) {
+        pool = topicImagePools.economy;
+      } else if (text.includes('বিশ্ববিদ্যালয়') || text.includes('বিদ্যালয়') || text.includes('পরীক্ষা') || text.includes('শিক্ষা') || text.includes('ছুটি') || text.includes('কলেজ') || text.includes('স্কুল')) {
+        pool = topicImagePools.education;
+      } else if (text.includes('gemini') || text.includes('ai') || text.includes('প্রযুক্তি') || text.includes('গুগল') || text.includes('মোবাইল') || text.includes('অ্যাপ') || text.includes('সাইবার')) {
+        pool = topicImagePools.tech;
+      } else if (text.includes('মাছ') || text.includes('দাম') || text.includes('বাজার') || text.includes('সবজি') || text.includes('চাল') || text.includes('সরবরাহ') || text.includes('কৃষি')) {
+        pool = topicImagePools.market_food;
+      } else if (text.includes('র‍্যাব') || text.includes('পুলিশ') || text.includes('পদক') || text.includes('আদালত') || text.includes('মামলা') || text.includes('গ্রেপ্তার') || text.includes('আইন')) {
+        pool = topicImagePools.crime_law;
+      } else if (text.includes('বিনোদন') || text.includes('হলিউড') || text.includes('বলিউড') || text.includes('movies') || text.includes('entertainment') || text.includes('সিনেমা') || text.includes('নাটক')) {
+        pool = topicImagePools.entertainment;
+      } else if (text.includes('বিশ্ব') || text.includes('international') || text.includes('global')) {
+        pool = topicImagePools.world;
+      }
+
+      return pickUniqueFromPool(pool, title || badge);
+    }
+
+    function loadCorsSafeImage(url, timeoutMs = 6000) {
+      return new Promise((resolve) => {
+        if (!url) return resolve(null);
+        let settled = false;
+        const done = (img) => {
+          if (!settled) {
+            settled = true;
+            resolve(img);
+          }
+        };
+
+        const timer = setTimeout(() => done(null), timeoutMs);
+
+        const tryLoad = (srcUrl, isProxyRetry = false) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => {
+            clearTimeout(timer);
+            done(img);
+          };
+          img.onerror = () => {
+            if (!isProxyRetry && !srcUrl.includes('wsrv.nl') && !srcUrl.includes('unsplash.com')) {
+              const proxied = `https://wsrv.nl/?url=${encodeURIComponent(srcUrl)}&w=1080&h=1080&fit=cover&output=jpg`;
+              tryLoad(proxied, true);
+            } else {
+              clearTimeout(timer);
+              done(null);
+            }
+          };
+          img.src = srcUrl;
+        };
+
+        tryLoad(url, false);
+      });
+    }
+
+    function drawCardLayers(ctx, item, bgImg) {
+      if (bgImg) {
+        ctx.drawImage(bgImg, 0, 0, 1080, 1080);
+      } else {
+        const fallbackGrad = ctx.createLinearGradient(0, 0, 1080, 1080);
+        fallbackGrad.addColorStop(0, "#1e293b");
+        fallbackGrad.addColorStop(1, "#090d16");
+        ctx.fillStyle = fallbackGrad;
+        ctx.fillRect(0, 0, 1080, 1080);
+      }
+
+      const grad = ctx.createLinearGradient(0, 280, 0, 1080);
+      grad.addColorStop(0, "rgba(11, 17, 32, 0.05)");
+      grad.addColorStop(0.45, "rgba(11, 17, 32, 0.85)");
+      grad.addColorStop(1, "rgba(11, 17, 32, 0.98)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1080);
+
+      if (item.isGlobal) {
+        ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+        roundRect(ctx, 60, 60, 240, 64, 14);
+        ctx.fillStyle = "#38bdf8";
+        ctx.font = "bold 26px 'Hind Siliguri', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("🌐 বিশ্ব সংবাদ", 180, 101);
+      }
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 30px 'Hind Siliguri', sans-serif";
+      ctx.fillText(pageName, 1020, 104);
+
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 54px 'Hind Siliguri', sans-serif";
+      wrapText(ctx, item.title, 60, 680, 960, 72);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(60, 965);
+      ctx.lineTo(1020, 965);
+      ctx.stroke();
+
+      ctx.font = "bold 28px 'Hind Siliguri', sans-serif";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText(`${pageName}`, 60, 1020);
+
+      ctx.textAlign = "right";
+      ctx.font = "26px 'Hind Siliguri', sans-serif";
+      ctx.fillStyle = "#cbd5e1";
+      ctx.fillText(getTodayFormattedDate(), 1020, 1020);
+    }
+
+    async function generateCardBlob(item) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+
+      const bgImg = await loadCorsSafeImage(item.image, 6000);
+      drawCardLayers(ctx, item, bgImg);
+
+      return new Promise((resolve) => {
+        try {
+          canvas.toBlob((blob) => {
+            if (blob && blob.size > 0) {
+              resolve(blob);
+            } else {
+              drawCardLayers(ctx, item, null);
+              canvas.toBlob((fallbackBlob) => resolve(fallbackBlob), 'image/png');
+            }
+          }, 'image/png');
+        } catch (e) {
+          const cleanCanvas = document.createElement('canvas');
+          cleanCanvas.width = 1080;
+          cleanCanvas.height = 1080;
+          const cleanCtx = cleanCanvas.getContext('2d');
+          drawCardLayers(cleanCtx, item, null);
+          cleanCanvas.toBlob((fallbackBlob) => resolve(fallbackBlob), 'image/png');
+        }
+      });
+    }
+
+    async function postNewsItemToFacebook(item, isAuto = false, customCaption = null) {
+      if (!fbConfig || !fbConfig.accessToken) {
+        if (!isAuto) alert("প্রথমে ফেসবুক পেজ কানেক্ট করুন।");
+        return false;
+      }
+
+      const caption = customCaption || buildPolishedCaption(item);
+
+      const attemptPhotoUpload = async () => {
+        const photoBlob = await generateCardBlob(item);
+        if (!photoBlob || photoBlob.size === 0) {
+          throw new Error("ফটো কার্ড তৈরি করা সম্ভব হয়নি (Empty Blob)");
+        }
+        const formData = new FormData();
+        formData.append('source', photoBlob, 'news-card.png');
+        formData.append('caption', caption);
+        formData.append('access_token', fbConfig.accessToken);
+
+        const endpoint = `https://graph.facebook.com/v20.0/${fbConfig.pageId}/photos`;
+        const response = await fetch(endpoint, { method: 'POST', body: formData });
+        const result = await response.json();
+        if (result.error) throw new Error(result.error.message);
+        return result;
+      };
+
+      try {
+        try {
+          await attemptPhotoUpload();
+        } catch (firstErr) {
+          // প্রথমবার নেটওয়ার্ক বা ইমেজ এরর হলে ১ বার রিট্রাই করবে
+          await new Promise(r => setTimeout(r, 1500));
+          await attemptPhotoUpload();
+        }
+
+        if (!postedNewsStore.some(n => n.id === item.id)) {
+          postedNewsStore.unshift(item);
+          if (postedNewsStore.length > 300) postedNewsStore = postedNewsStore.slice(0, 300);
+          try { localStorage.setItem('posted_news_store', JSON.stringify(postedNewsStore)); } catch(e) {}
+        }
+        allFetchedNews = allFetchedNews.filter(n => n.id !== item.id);
+
+        renderNewsGrid();
+        logActivity(`✅ সফলভাবে ফেসবুকে পোস্ট হয়েছে: "${item.title.substring(0, 35)}..."`);
+        return true;
+      } catch (err) {
+        // অটো-পোস্ট চলাকালে কোনো একটি নিউজ বারবার ফেইল করলে সেটিকে কিউ থেকে সরিয়ে পরের নিউজে যাবে যাতে অটো-পোস্ট আটকে না থাকে
+        if (isAuto) {
+          allFetchedNews = allFetchedNews.filter(n => n.id !== item.id);
+          renderNewsGrid();
+        }
+        logActivity(`❌ পোস্ট ব্যর্থ (${err.message}) — পরবর্তী খবরে যাচ্ছে...`);
+        return false;
+      }
+    }
+
+    async function publishCurrentToFacebook() {
+      if (!currentSelectedNews) return;
+      const btn = document.getElementById('directFbPostBtn');
+      const feedback = document.getElementById('modalPostFeedback');
+      const editedCaption = document.getElementById('copyTextArea').value;
+
+      btn.disabled = true;
+      btn.innerText = "⏳ পোস্ট হচ্ছে...";
+      feedback.innerText = "ফেসবুক পেজে পাঠানো হচ্ছে...";
+
+      const success = await postNewsItemToFacebook(currentSelectedNews, false, editedCaption);
+
+      btn.disabled = false;
+      btn.innerText = "🚀 সরাসরি ফেসবুকে পোস্ট করুন";
+
+      if (success) {
+        feedback.innerHTML = `<span class="text-emerald-400 font-bold">✅ সফলভাবে পোস্ট হয়েছে!</span>`;
+        setTimeout(() => closeModal(), 1000);
+      } else {
+        feedback.innerHTML = `<span class="text-red-400 font-bold">❌ পোস্ট ব্যর্থ হয়েছে।</span>`;
+      }
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      const tabFeedBtn = document.getElementById('tabFeedBtn');
+      const tabPostedBtn = document.getElementById('tabPostedBtn');
+      const catSec = document.getElementById('categorySection');
+
+      if (tab === 'feed') {
+        tabFeedBtn.className = "flex-1 py-2 rounded-xl text-sm font-bold transition bg-red-600 text-white shadow-md flex items-center justify-center gap-2";
+        tabPostedBtn.className = "flex-1 py-2 rounded-xl text-sm font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-2";
+        catSec.classList.remove('hidden');
+      } else {
+        tabPostedBtn.className = "flex-1 py-2 rounded-xl text-sm font-bold transition bg-emerald-600 text-white shadow-md flex items-center justify-center gap-2";
+        tabFeedBtn.className = "flex-1 py-2 rounded-xl text-sm font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-2";
+        catSec.classList.add('hidden');
+      }
+      renderNewsGrid();
+    }
+
+    function filterCategory(catKey, evt) {
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.className = "cat-btn bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl text-xs font-semibold transition";
+      });
+      if (evt) evt.target.className = "cat-btn bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-xl text-xs font-semibold transition";
+
+      const sourceContainer = document.getElementById('source-buttons');
+      sourceContainer.innerHTML = '';
+
+      if (catKey === 'all') {
+        sourceContainer.innerHTML = `<span class="text-xs text-slate-400 py-1">সেরা সোর্সগুলো থেকে একসাথে খবর সংগ্রহ করা হচ্ছে।</span>`;
+        fetchAllCategoriesNews();
+        return;
+      }
+
+      sourcesData[catKey].forEach((src, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `text-xs px-2.5 py-1 rounded-lg border font-medium transition ${idx === 0 ? 'bg-slate-700 text-white border-slate-500' : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-600'}`;
+        btn.innerText = `${src.isGlobal ? '🌐' : '📰'} ${src.name}`;
+        btn.onclick = () => {
+          document.querySelectorAll('#source-buttons button').forEach(b => b.className = 'text-xs px-2.5 py-1 rounded-lg border font-medium bg-slate-950 text-slate-400 border-slate-800');
+          btn.className = 'text-xs px-2.5 py-1 rounded-lg border font-medium bg-slate-700 text-white border-slate-500';
+          fetchNews(src);
+        };
+        sourceContainer.appendChild(btn);
+      });
+
+      fetchMultipleSources(sourcesData[catKey].slice(0, 6));
+    }
+
+    async function processFeedItems(items, src) {
+      return await Promise.all(items.map(async item => {
+        let rawTitle = cleanFullText(item.title || "").replace(/\s+-\s+[^-]+$/, '').trim();
+        const contentClean = cleanFullText(item.content || "").replace(/\s+-\s+[^-]+$/, '').trim();
+        const descClean = cleanFullText(item.description || "").replace(/\s+-\s+[^-]+$/, '').trim();
+        
+        let fullBodyText = contentClean.length > descClean.length ? contentClean : descClean;
+        if (!fullBodyText || fullBodyText.length < 25) {
+          fullBodyText = `${rawTitle} সম্পর্কিত সাম্প্রতিক তথ্য ও আপডেট নিচে তুলে ধরা হলো।`;
+        }
+
+        if (src.isGlobal) {
+          rawTitle = await translateTextToBengali(rawTitle);
+          fullBodyText = await translateTextToBengali(fullBodyText);
+        }
+
+        let imgUrl = item.thumbnail || (item.enclosure && item.enclosure.link);
+        if (!imgUrl && item.description) {
+          const matches = item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
+          if (matches) imgUrl = matches[1];
+        }
+        if (!imgUrl && item.content) {
+          const matches = item.content.match(/<img[^>]+src=["']([^"']+)["']/i);
+          if (matches) imgUrl = matches[1];
+        }
+        
+        let hasRealImage = !!(imgUrl && imgUrl.startsWith('http') && !imgUrl.includes('gstatic') && !imgUrl.includes('google') && !usedImageUrls.has(imgUrl));
+        if (hasRealImage) {
+          usedImageUrls.add(imgUrl);
+        } else {
+          imgUrl = getSmartDefaultImage(src.badge, rawTitle);
+        }
+
+        return {
+          id: item.guid || item.link || rawTitle,
+          title: polishBengaliText(rawTitle),
+          description: polishBengaliText(fullBodyText),
+          image: imgUrl,
+          hasRealImage: hasRealImage,
+          originSource: src.name,
+          isGlobal: !!src.isGlobal,
+          badge: src.badge,
+          color: src.color,
+          tag: src.tag,
+          trust: src.trust || 8
+        };
+      }));
+    }
+
+    async function fetchRssItemsWithFallback(rssUrl) {
+      // ১) প্রথমে rss2json চেষ্টা
+      try {
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        if (data.status === 'ok' && Array.isArray(data.items) && data.items.length > 0) {
+          return data.items;
+        }
+      } catch (e) {}
+
+      // ২) rss2json রেট-লিমিট বা ব্যর্থ হলে AllOrigins প্রক্সি দিয়ে সরাসরি XML পার্স করা
+      try {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+        const res = await fetch(proxyUrl);
+        const xmlText = await res.text();
+        if (xmlText && xmlText.includes('<item')) {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(xmlText, 'text/xml');
+          const nodes = Array.from(doc.querySelectorAll('item'));
+          return nodes.map(node => {
+            const title = node.querySelector('title')?.textContent || '';
+            const link = node.querySelector('link')?.textContent || '';
+            const description = node.querySelector('description')?.textContent || '';
+            const guid = node.querySelector('guid')?.textContent || link || title;
+            const mediaContent = node.getElementsByTagNameNS('*', 'content')[0]?.getAttribute('url') || '';
+            const mediaThumb = node.getElementsByTagNameNS('*', 'thumbnail')[0]?.getAttribute('url') || '';
+            const enclosure = node.querySelector('enclosure')?.getAttribute('url') || '';
+            return {
+              title,
+              link,
+              guid,
+              description,
+              content: description,
+              thumbnail: mediaThumb || mediaContent || enclosure
+            };
+          });
+        }
+      } catch (e) {}
+
+      return [];
+    }
+
+    async function fetchMultipleSources(sourceList) {
+      usedImageUrls.clear();
+      const loader = document.getElementById('loading');
+      loader.classList.remove('hidden');
+      document.getElementById('news-container').innerHTML = '';
+
+      try {
+        let combined = [];
+        await Promise.all(sourceList.map(async src => {
+          try {
+            const items = await fetchRssItemsWithFallback(src.url);
+            if (items.length > 0) {
+              const mapped = await processFeedItems(items.slice(0, 8), src);
+              combined = combined.concat(mapped);
+            }
+          } catch (e) {}
+        }));
+
+        allFetchedNews = deduplicateAndSelectBestNews(combined);
+        logActivity(`${allFetchedNews.length}টি তাজা খবর প্রস্তুত।`);
+      } catch (e) {}
+      loader.classList.add('hidden');
+      renderNewsGrid();
+    }
+
+    async function fetchAllCategoriesNews() {
+      const smartMixSources = [
+        sourcesData.bd_sports[0],    // BDCricTime (বাংলাদেশ ক্রিকেট)
+        sourcesData.bd_sports[1],    // CricketFrenzy
+        sourcesData.bd_sports[2],    // প্রথম আলো খেলা
+        sourcesData.bd_sports[3],    // বাংলাদেশ ফুটবল (BFF, হামজা, জামাল)
+        sourcesData.bd_sports[4],    // বাংলাদেশ ক্রিকেট ও খেলোয়াড় (সাকিব, তামিম, লিটন, শান্ত)
+        sourcesData.bd_sports[5],    // জাগোনিউজ খেলা
+        sourcesData.bd_sports[6],    // রাইজিংবিডি খেলা
+        sourcesData.bd_sports[7],    // সময় টিভি খেলা
+        sourcesData.intl_cricket[0], // ESPNcricinfo
+        sourcesData.intl_cricket[1], // Cricbuzz
+        sourcesData.intl_sports[0],  // ESPN
+        sourcesData.intl_sports[1],  // BBC Sport
+        sourcesData.intl_sports[9],  // Goal.com (ফুটবল)
+        sourcesData.bd_bn[0],        // প্রথম আলো
+        sourcesData.bd_bn[1],        // বাংলাদেশ প্রতিদিন
+        sourcesData.bd_bn[2],        // কালের কণ্ঠ
+        sourcesData.bd_bn[22],       // সময় টিভি
+        sourcesData.bd_bn[23],       // যমুনা টিভি
+        sourcesData.world[0],        // Reuters
+        sourcesData.world[1]         // BBC News
+      ];
+      await fetchMultipleSources(smartMixSources);
+    }
+
+    async function fetchNews(sourceObj) {
+      await fetchMultipleSources([sourceObj]);
+    }
+
+    async function translateTextToBengali(text) {
+      if (!text || text.trim() === "") return "";
+      try {
+        const chunks = text.match(/.{1,450}(\s|$)/g) || [text];
+        let translatedFull = "";
+        for (const chunk of chunks) {
+          const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=bn&dt=t&q=${encodeURIComponent(chunk.trim())}`;
+          const res = await fetch(url);
+          const json = await res.json();
+          if (json && json[0]) {
+            translatedFull += json[0].map(item => item[0]).join('') + " ";
+          }
+        }
+        return translatedFull.trim() || text;
+      } catch (err) {
+        return text;
+      }
+    }
+
+    function polishBengaliText(str) {
+      return str
+        .replace(/\s+([।,?!])/g, '$1')
+        .replace(/\.(\s|$)/g, '।$1')
+        .replace(/।\s*।/g, '।')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+    }
+
+    function cleanFullText(raw) {
+      const div = document.createElement('div');
+      div.innerHTML = raw;
+      div.querySelectorAll('script, style, a, figure, figcaption').forEach(el => el.remove());
+      return (div.textContent || div.innerText || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function renderNewsGrid() {
+      const container = document.getElementById('news-container');
+      container.innerHTML = '';
+
+      const postedIds = postedNewsStore.map(item => item.id);
+      let displayItems = currentTab === 'feed'
+        ? allFetchedNews.filter(n => !postedIds.includes(n.id))
+        : postedNewsStore;
+
+      updateBadges();
+
+      if (displayItems.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full text-center py-12 text-slate-500">
+            ${currentTab === 'feed' ? 'সব খবর পোস্ট করা হয়ে গেছে।' : 'কোনো খবর নেই।'}
+          </div>
+        `;
+        return;
+      }
+
+      displayItems.forEach((item) => {
+        const isPosted = postedIds.includes(item.id);
+        const card = document.createElement('div');
+        card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col hover:border-slate-600 transition shadow-lg cursor-pointer group";
+        card.onclick = () => openNewsDetail(item);
+
+        card.innerHTML = `
+          <div class="h-44 relative overflow-hidden bg-slate-950">
+            <img src="${item.image}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-md text-xs font-bold text-white shadow" style="background-color: ${item.color || '#dc2626'}">
+              ${item.badge}
+            </span>
+            <span class="absolute top-3 right-3 bg-slate-950/85 text-amber-400 text-[11px] px-2 py-0.5 rounded font-bold border border-amber-500/30">
+              ⭐ স্কোর: ${item.qualityScore || 95}
+            </span>
+            ${item.isGlobal ? `<span class="absolute bottom-2 left-2 bg-slate-950/85 text-sky-400 text-[11px] px-2 py-0.5 rounded font-semibold border border-sky-500/30">🌐 ${item.originSource}</span>` : `<span class="absolute bottom-2 left-2 bg-slate-950/85 text-slate-300 text-[11px] px-2 py-0.5 rounded font-semibold">📰 ${item.originSource}</span>`}
+            ${isPosted ? `<span class="absolute bottom-2 right-2 bg-emerald-600 text-white text-xs px-2.5 py-0.5 rounded-md font-bold shadow">✓ পোস্টেড</span>` : ''}
+          </div>
+          <div class="p-4 flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white leading-snug line-clamp-2">${item.title}</h3>
+              <p class="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">${item.description}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs text-red-400 font-semibold">
+              <span>সম্পূর্ণ পোস্ট ও কার্ড দেখুন →</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openNewsDetail(item) {
+      currentSelectedNews = item;
+      document.getElementById('detailModal').classList.remove('hidden');
+
+      document.getElementById('modalBadge').innerText = item.badge;
+      document.getElementById('modalBadge').style.backgroundColor = item.color || '#dc2626';
+      document.getElementById('modalOriginSource').innerText = item.isGlobal ? `🌐 সোর্স: ${item.originSource} (অনূদিত)` : `📰 সোর্স: ${item.originSource}`;
+      document.getElementById('modalQualityScore').innerText = `⭐ স্কোর: ${item.qualityScore || 95}`;
+      document.getElementById('modalTitle').innerText = item.title;
+
+      document.getElementById('copyTextArea').value = buildPolishedCaption(item);
+      document.getElementById('modalPostFeedback').innerText = "সরাসরি পোস্ট করলে স্বয়ংক্রিয়ভাবে 'পোস্ট করা খবর' তালিকায় চলে যাবে।";
+
+      const isPosted = postedNewsStore.some(n => n.id === item.id);
+      const markBtn = document.getElementById('markPostBtn');
+      markBtn.innerHTML = isPosted ? "↩️ তালিকা থেকে সরান" : "✅ মার্ক এজ পোস্ট";
+
+      renderPhotoCardCanvas(item);
+    }
+
+    function copyPostText() {
+      const textarea = document.getElementById('copyTextArea');
+      textarea.select();
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        const msg = document.getElementById('copySuccessMsg');
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 2500);
+      });
+    }
+
+    function togglePostStatus() {
+      if (!currentSelectedNews) return;
+      const idx = postedNewsStore.findIndex(n => n.id === currentSelectedNews.id);
+      if (idx >= 0) {
+        postedNewsStore.splice(idx, 1);
+      } else {
+        postedNewsStore.unshift(currentSelectedNews);
+      }
+      localStorage.setItem('posted_news_store', JSON.stringify(postedNewsStore));
+      closeModal();
+      renderNewsGrid();
+    }
+
+    function updateBadges() {
+      const postedIds = postedNewsStore.map(item => item.id);
+      const unposted = allFetchedNews.filter(n => !postedIds.includes(n.id)).length;
+      document.getElementById('unpostedCount').innerText = unposted;
+      document.getElementById('postedCount').innerText = postedNewsStore.length;
+    }
+
+    async function renderPhotoCardCanvas(item) {
+      const canvas = document.getElementById('photoCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, 1080, 1080);
+
+      const bgImg = await loadCorsSafeImage(item.image, 6000);
+      drawCardLayers(ctx, item, bgImg);
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function downloadCard() {
+      const canvas = document.getElementById('photoCanvas');
+      const link = document.createElement('a');
+      link.download = `${pageName}-Card-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
