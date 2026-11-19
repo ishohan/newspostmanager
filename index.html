@@ -268,7 +268,8 @@
         { name: "ঢাকা টাইমস২৪", url: gFeed("dhakatimes24.com", "bn", "BD"), badge: "তাজা খবর", color: "#b91c1c", isGlobal: false, trust: 7, tag: "#ঢাকা_টাইমস #বাংলাদেশ" },
         { name: "চ্যানেল আই অনলাইন", url: gFeed("channelionline.com", "bn", "BD"), badge: "টিভি নিউজ", color: "#0284c7", isGlobal: false, trust: 9, tag: "#চ্যানেল_আই #বাংলাদেশ" },
         { name: "সময় টিভি", url: gFeed("somoynews.tv", "bn", "BD"), badge: "ব্রেকিং টিভি", color: "#dc2626", isGlobal: false, trust: 10, tag: "#সময়_টিভি #তাজা_খবর" },
-        { name: "যমুনা টিভি", url: gFeed("jamuna.tv", "bn", "BD"), badge: "ব্রেকিং টিভি", color: "#1d4ed8", isGlobal: false, trust: 10, tag: "#যমুনা_টিভি #তাজা_খবর" }
+        { name: "যমুনা টিভি", url: gFeed("jamuna.tv", "bn", "BD"), badge: "ব্রেকিং টিভি", color: "#1d4ed8", isGlobal: false, trust: 10, tag: "#যমুনা_টিভি #তাজা_খবর" },
+        { name: "বাংলাদেশ রাজনীতি ও পরিস্থিতি", url: "https://news.google.com/rss/search?q=বাংলাদেশ+রাজনীতি+OR+সংঘর্ষ+OR+মারামারি+OR+আগুন+OR+বিক্ষোভ+OR+অবরোধ+OR+হরতাল+OR+আইনশৃঙ্খলা&hl=bn&gl=BD&ceid=BD:bn", badge: "রাজনীতি ও পরিস্থিতি", color: "#e11d48", isGlobal: false, trust: 10, isPolitics: true, tag: "#বাংলাদেশ_রাজনীতি #দেশ_পরিস্থিতি" }
       ],
       bd_en: [
         { name: "The Daily Star", url: "https://www.thedailystar.net/frontpage/rss.xml", badge: "BD English", color: "#dc2626", isGlobal: true, trust: 10, tag: "#DailyStar #বাংলাদেশ" },
@@ -427,6 +428,12 @@
       return item.isSports || sportsKeywords.some(k => text.includes(k));
     }
 
+    function isBangladeshPoliticsNews(item) {
+      const text = `${item.title} ${item.description} ${item.badge} ${item.originSource}`.toLowerCase();
+      const politicsKeywords = ['রাজনীতি', 'রাজনৈতিক', 'দল', 'আন্দোলন', 'বিক্ষোভ', 'সংঘর্ষ', 'মারামারি', 'গন্ডগোল', 'আগুন', 'অগ্নিসংযোগ', 'ভাঙচুর', 'হরতাল', 'অবরোধ', 'মিছিল', 'সমাবেশ', 'পুলিশ', 'আইনশৃঙ্খলা', 'সরকার', 'নির্বাচন', 'সংসদ', 'নেতা', 'নেতাকর্মী', 'ছাত্র', 'ক্যাম্পাস', 'প্রশাসন', 'গ্রেপ্তার'];
+      return item.isPolitics || politicsKeywords.some(k => text.includes(k));
+    }
+
     function calculateNewsQualityScore(item) {
       let score = 0;
       score += (item.trust || 8) * 10;
@@ -434,11 +441,13 @@
       if (item.title.length >= 20 && item.title.length <= 115) score += 20;
       if (item.hasRealImage) score += 40;
 
-      // খেলার খবরকে সবসময় বেশি প্রাধান্য দেওয়া হবে (বিশেষ করে বাংলাদেশের ক্রিকেট, ফুটবল ও খেলোয়াড়দের খবর)
+      // খেলার খবর ও দেশের বর্তমান রাজনীতির খবরকে সমান সর্বোচ্চ গুরুত্ব দেওয়া হবে
       if (isBangladeshSportsNews(item) || item.isBdSports) {
-        score += 180; // সর্বোচ্চ অগ্রাধিকার: বাংলাদেশের ক্রিকেট ও ফুটবল
+        score += 180;
+      } else if (isBangladeshPoliticsNews(item)) {
+        score += 180;
       } else if (isGeneralSportsNews(item)) {
-        score += 110; // দ্বিতীয় সর্বোচ্চ অগ্রাধিকার: আন্তর্জাতিক খেলাধুলা
+        score += 110;
       }
 
       return Math.round(score);
@@ -512,8 +521,32 @@
 
       avoidedDuplicatesCount += localAvoided;
       document.getElementById('dedupStatsBadge').innerText = `🛡️ ডুপ্লিকেট এভয়েড: ${avoidedDuplicatesCount}টি`;
-      
-      return uniqueBestList.sort((a, b) => b.qualityScore - a.qualityScore);
+
+      // একটি খেলার খবর (বিশেষ করে স্পোর্টস) এবং তার পর একটি রাজনীতির খবর — এভাবে পর্যায়ক্রমে সাজানো হবে
+      const sortedAll = uniqueBestList.sort((a, b) => b.qualityScore - a.qualityScore);
+      const sportsQueue = sortedAll.filter(n => isBangladeshSportsNews(n) || n.isBdSports || isGeneralSportsNews(n));
+      const politicsQueue = sortedAll.filter(n => !sportsQueue.includes(n) && isBangladeshPoliticsNews(n));
+      const otherQueue = sortedAll.filter(n => !sportsQueue.includes(n) && !politicsQueue.includes(n));
+
+      const alternatingList = [];
+      let sIdx = 0, pIdx = 0, oIdx = 0;
+
+      while (sIdx < sportsQueue.length || pIdx < politicsQueue.length) {
+        if (sIdx < sportsQueue.length) {
+          alternatingList.push(sportsQueue[sIdx++]);
+        }
+        if (pIdx < politicsQueue.length) {
+          alternatingList.push(politicsQueue[pIdx++]);
+        } else if (oIdx < otherQueue.length) {
+          alternatingList.push(otherQueue[oIdx++]);
+        }
+      }
+
+      while (oIdx < otherQueue.length) {
+        alternatingList.push(otherQueue[oIdx++]);
+      }
+
+      return alternatingList;
     }
 
     function formatSecondsToMMSS(totalSec) {
@@ -721,11 +754,9 @@
 
     const topicImagePools = {
       cricket: [
-        "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1080&q=80",
         "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=1080&q=80",
         "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=1080&q=80",
-        "https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=1080&q=80",
-        "https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=1080&q=80"
+        "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1080&q=80"
       ],
       football: [
         "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=1080&q=80",
@@ -819,11 +850,207 @@
       return `${chosen}&sig=${Math.abs(hash)}`;
     }
 
+    // খেলোয়াড় ও ব্যক্তিত্ব অনুযায়ী ডেডিকেটেড প্রোফাইল ও ম্যাচ-থিমড ভিজ্যুয়াল জেনারেটর (AI Canvas Portrait + Cricket Match Art)
+    const entityMediaRegistry = [
+      {
+        keys: ['হৃদয়', 'হৃদয়', 'তাওহীদ হৃদয়', 'তাওহীদ হৃদয়', 'towhid hridoy', 'hridoy'],
+        nameBn: 'তাওহীদ হৃদয়',
+        roleBn: 'বাংলাদেশ ক্রিকেট দল • মিডল অর্ডার ব্যাটার',
+        accent: '#10b981',
+        secondary: '#059669',
+        tagBn: '🇧🇩 টাইগার্স • হৃদয়'
+      },
+      {
+        keys: ['লিটন', 'লিটন দাস', 'litton das', 'liton'],
+        nameBn: 'লিটন দাস',
+        roleBn: 'বাংলাদেশ ক্রিকেট দল • ব্যাটার ও উইকেটকিপার',
+        accent: '#38bdf8',
+        secondary: '#0284c7',
+        tagBn: '🇧🇩 টাইগার্স • লিটন দাস'
+      },
+      {
+        keys: ['মিরাজ', 'মেহেদী হাসান মিরাজ', 'mehedi hasan miraz', 'miraz'],
+        nameBn: 'মেহেদী হাসান মিরাজ',
+        roleBn: 'বাংলাদেশ ক্রিকেট দল • অলরাউন্ডার',
+        accent: '#f59e0b',
+        secondary: '#d97706',
+        tagBn: '🇧🇩 টাইগার্স • মিরাজ'
+      },
+      {
+        keys: ['সাকিব', 'সাকিব আল হাসান', 'shakib al hasan', 'shakib'],
+        nameBn: 'সাকিব আল হাসান',
+        roleBn: 'অলরাউন্ডার • ক্রিকেট',
+        accent: '#ef4444',
+        secondary: '#b91c1c',
+        tagBn: '🏏 সাকিব আল হাসান'
+      },
+      {
+        keys: ['তামিম', 'তামিম ইকবাল', 'tamim iqbal', 'tamim'],
+        nameBn: 'তামিম ইকবাল',
+        roleBn: 'বাংলাদেশ ক্রিকেট • ওপেনার',
+        accent: '#22c55e',
+        secondary: '#15803d',
+        tagBn: '🇧🇩 তামিম ইকবাল'
+      },
+      {
+        keys: ['তাসকিন', 'taskin ahmed', 'taskin'],
+        nameBn: 'তাসকিন আহমেদ',
+        roleBn: 'বাংলাদেশ ক্রিকেট দল • ফাস্ট বোলার',
+        accent: '#f97316',
+        secondary: '#c2410c',
+        tagBn: '🇧🇩 টাইগার্স • তাসকিন'
+      },
+      {
+        keys: ['মুস্তাফিজ', 'mustafizur rahman', 'mustafiz'],
+        nameBn: 'মুস্তাফিজুর রহমান',
+        roleBn: 'বাংলাদেশ ক্রিকেট দল • পেসার',
+        accent: '#06b6d4',
+        secondary: '#0e7490',
+        tagBn: '🇧🇩 দ্য ফিজ • মুস্তাফিজ'
+      },
+      {
+        keys: ['শান্ত', 'নাজমুল হোসেন শান্ত', 'shanto'],
+        nameBn: 'নাজমুল হোসেন শান্ত',
+        roleBn: 'বাংলাদেশ ক্রিকেট দল • ব্যাটার',
+        accent: '#10b981',
+        secondary: '#047857',
+        tagBn: '🇧🇩 টাইগার্স • শান্ত'
+      },
+      {
+        keys: ['রাবাদা', 'ক্যাগিসো রাবাদা', 'rabada'],
+        nameBn: 'ক্যাগিসো রাবাদা',
+        roleBn: 'দক্ষিণ আফ্রিকা • ফাস্ট বোলার',
+        accent: '#eab308',
+        secondary: '#a16207',
+        tagBn: '🏏 রাবাদা'
+      },
+      {
+        keys: ['বাভুমা', 'টেম্বা বাভুমা', 'bavuma'],
+        nameBn: 'টেম্বা বাভুমা',
+        roleBn: 'দক্ষিণ আফ্রিকা • অধিনায়ক',
+        accent: '#16a34a',
+        secondary: '#166534',
+        tagBn: '🏏 বাভুমা'
+      },
+      {
+        keys: ['হামজা', 'হামজা চৌধুরী', 'hamza choudhury', 'জামাল ভূঁইয়া', 'jamal bhuyan'],
+        nameBn: 'বাংলাদেশ ফুটবল',
+        roleBn: 'বাংলাদেশ জাতীয় ফুটবল দল • ম্যাচ আপডেট',
+        accent: '#22c55e',
+        secondary: '#15803d',
+        tagBn: '⚽ বাংলাদেশ ফুটবল'
+      },
+      {
+        keys: ['সংঘর্ষ', 'মারামারি', 'গন্ডগোল', 'আগুন', 'অগ্নিসংযোগ', 'ভাঙচুর', 'বিক্ষোভ', 'অবরোধ', 'হরতাল', 'রাজনীতি', 'রাজনৈতিক'],
+        nameBn: 'দেশ ও রাজনীতি',
+        roleBn: 'চলমান রাজনৈতিক ও আইনশৃঙ্খলা পরিস্থিতি',
+        accent: '#ef4444',
+        secondary: '#b91c1c',
+        tagBn: '🚨 রাজনীতি ও পরিস্থিতি'
+      }
+    ];
+
+    function findMatchedEntity(title = "", badge = "") {
+      const text = `${title} ${badge}`.toLowerCase();
+      for (const entry of entityMediaRegistry) {
+        if (entry.keys.some(k => text.includes(k.toLowerCase()))) {
+          return entry;
+        }
+      }
+      return null;
+    }
+
+    function createEntityGraphicDataUrl(entity, title) {
+      const c = document.createElement('canvas');
+      c.width = 900;
+      c.height = 600;
+      const g = c.getContext('2d');
+
+      // স্টুডিও ও স্টেডিয়াম ফ্লাডলাইট ব্যাকগ্রাউন্ড
+      const bg = g.createLinearGradient(0, 0, 900, 600);
+      bg.addColorStop(0, '#071324');
+      bg.addColorStop(0.55, '#0f2942');
+      bg.addColorStop(1, '#060d18');
+      g.fillStyle = bg;
+      g.fillRect(0, 0, 900, 600);
+
+      // সবুজ পিচ / মাঠের আভা
+      const turfGrad = g.createRadialGradient(450, 560, 40, 450, 560, 480);
+      turfGrad.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+      turfGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+      g.fillStyle = turfGrad;
+      g.fillRect(0, 0, 900, 600);
+
+      // ডেকোরেটিভ রিং ও হাইলাইট
+      g.strokeStyle = entity.accent;
+      g.globalAlpha = 0.25;
+      g.lineWidth = 3;
+      g.beginPath();
+      g.arc(700, 240, 175, 0, Math.PI * 2);
+      g.stroke();
+      g.beginPath();
+      g.arc(700, 240, 130, 0, Math.PI * 2);
+      g.stroke();
+      g.globalAlpha = 1;
+
+      // খেলোয়াড়ের স্টাইলাইজড অ্যাভাটার ব্যাজ
+      g.fillStyle = entity.accent;
+      g.beginPath();
+      g.arc(700, 225, 88, 0, Math.PI * 2);
+      g.fill();
+
+      g.fillStyle = '#071324';
+      g.beginPath();
+      g.arc(700, 200, 32, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.ellipse(700, 268, 52, 34, 0, Math.PI, 0, false);
+      g.fill();
+
+      // খেলোয়াড়ের নাম ও পরিচয় ব্যাজ (বাম পাশে)
+      g.fillStyle = entity.accent;
+      roundRect(g, 55, 65, 340, 44, 10);
+      g.fillStyle = '#ffffff';
+      g.font = "bold 22px 'Hind Siliguri', sans-serif";
+      g.textAlign = 'left';
+      g.fillText(entity.tagBn, 72, 95);
+
+      g.fillStyle = '#ffffff';
+      g.font = "bold 54px 'Hind Siliguri', sans-serif";
+      g.fillText(entity.nameBn, 55, 185);
+
+      g.fillStyle = '#cbd5e1';
+      g.font = "600 24px 'Hind Siliguri', sans-serif";
+      g.fillText(entity.roleBn, 55, 232);
+
+      // খবরের শিরোনামের সংক্ষিপ্ত হাইলাইট
+      g.fillStyle = 'rgba(255, 255, 255, 0.92)';
+      g.font = "bold 28px 'Hind Siliguri', sans-serif";
+      wrapText(g, title, 55, 320, 500, 40);
+
+      // নিচের স্ট্যাটাস বার
+      g.fillStyle = 'rgba(2, 6, 23, 0.78)';
+      g.fillRect(0, 525, 900, 75);
+      g.fillStyle = entity.accent;
+      g.font = "bold 20px 'Hind Siliguri', sans-serif";
+      g.fillText('MATCH & PLAYER SPOTLIGHT', 55, 570);
+      g.textAlign = 'right';
+      g.fillStyle = '#94a3b8';
+      g.fillText(pageName, 845, 570);
+
+      return c.toDataURL('image/jpeg', 0.9);
+    }
+
     function getSmartDefaultImage(badge, title = "") {
+      const matchedEntity = findMatchedEntity(title, badge);
+      if (matchedEntity) {
+        return createEntityGraphicDataUrl(matchedEntity, title);
+      }
+
       const text = (badge + " " + title).toLowerCase();
       let pool = topicImagePools.general;
 
-      if (text.includes('ক্রিকেট') || text.includes('cricket') || text.includes('বিপিএল') || text.includes('সাকিব') || text.includes('তামিম') || text.includes('লিটন') || text.includes('তাসকিন')) {
+      if (text.includes('ক্রিকেট') || text.includes('cricket') || text.includes('বিপিএল') || text.includes('সাকিব') || text.includes('তামিম') || text.includes('লিটন') || text.includes('তাসকিন') || text.includes('রাবাদা') || text.includes('rabada')) {
         pool = topicImagePools.cricket;
       } else if (text.includes('ফুটবল') || text.includes('football') || text.includes('goal') || text.includes('মেসি') || text.includes('রোনালদো') || text.includes('হামজা') || text.includes('বাফুফে')) {
         pool = topicImagePools.football;
@@ -844,6 +1071,20 @@
       }
 
       return pickUniqueFromPool(pool, title || badge);
+    }
+
+    // খেলোয়াড় বা ব্যক্তিত্ব ম্যাচ করলে তার নিজস্ব ডেডিকেটেড ভিজ্যুয়াল/ছবি ব্যবহার করা হবে যাতে অপ্রাসঙ্গিক ছবি না আসে
+    async function resolveContextualArticleImage(rawTitle, badge, existingImgUrl, hasRealImage) {
+      const entity = findMatchedEntity(rawTitle, badge);
+      if (entity) {
+        return { image: createEntityGraphicDataUrl(entity, rawTitle), hasRealImage: true };
+      }
+
+      if (hasRealImage && existingImgUrl) {
+        return { image: existingImgUrl, hasRealImage: true };
+      }
+
+      return { image: getSmartDefaultImage(badge, rawTitle), hasRealImage: false };
     }
 
     function loadCorsSafeImage(url, timeoutMs = 6000) {
@@ -1118,11 +1359,18 @@
           if (matches) imgUrl = matches[1];
         }
         
+        const matchedEntity = findMatchedEntity(rawTitle, src.badge);
         let hasRealImage = !!(imgUrl && imgUrl.startsWith('http') && !imgUrl.includes('gstatic') && !imgUrl.includes('google') && !usedImageUrls.has(imgUrl));
-        if (hasRealImage) {
+        if (matchedEntity) {
+          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, hasRealImage);
+          imgUrl = resolved.image;
+          hasRealImage = resolved.hasRealImage;
+        } else if (hasRealImage) {
           usedImageUrls.add(imgUrl);
         } else {
-          imgUrl = getSmartDefaultImage(src.badge, rawTitle);
+          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, false);
+          imgUrl = resolved.image;
+          hasRealImage = resolved.hasRealImage;
         }
 
         return {
@@ -1224,6 +1472,7 @@
         sourcesData.intl_sports[0],  // ESPN
         sourcesData.intl_sports[1],  // BBC Sport
         sourcesData.intl_sports[9],  // Goal.com (ফুটবল)
+        sourcesData.bd_bn[24],       // বাংলাদেশ রাজনীতি ও পরিস্থিতি (সংঘর্ষ, মারামারি, আগুন, বিক্ষোভ)
         sourcesData.bd_bn[0],        // প্রথম আলো
         sourcesData.bd_bn[1],        // বাংলাদেশ প্রতিদিন
         sourcesData.bd_bn[2],        // কালের কণ্ঠ
