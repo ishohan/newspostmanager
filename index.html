@@ -604,8 +604,9 @@
 
         const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
         secondsRemaining = intervalSec;
+        nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
         document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
-        logActivity(`অটো-পোস্ট চালু হয়েছে।`);
+        logActivity(`অটো-পোস্ট চালু হয়েছে (ব্যাকগ্রাউন্ড ওয়ার্কার সক্রিয়)।`);
 
         startCountdownLoop();
       } else {
@@ -613,6 +614,9 @@
         btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 transition";
         badge.classList.add('hidden');
         clearInterval(countdownInterval);
+        if (heartbeatWorker) heartbeatWorker.postMessage('stop');
+        releaseScreenWakeLockIfPossible();
+        nextScheduledPostTimeMs = 0;
         logActivity("অটো-পোস্ট বন্ধ করা হয়েছে।");
       }
     }
@@ -621,34 +625,117 @@
       if (autoPostActive) {
         const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
         secondsRemaining = intervalSec;
+        nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
         document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
       }
     }
 
+    let nextScheduledPostTimeMs = 0;
+    let heartbeatWorker = null;
+    let wakeLockSentinel = null;
+
+    function createBackgroundHeartbeatWorker() {
+      if (heartbeatWorker || typeof Worker === 'undefined') return null;
+      try {
+        const workerCode = `
+          let timerId = null;
+          self.onmessage = function(e) {
+            if (e.data === 'start') {
+              if (timerId) clearInterval(timerId);
+              timerId = setInterval(() => self.postMessage('tick'), 1000);
+            } else if (e.data === 'stop') {
+              if (timerId) clearInterval(timerId);
+              timerId = null;
+            }
+          };
+        `;
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        const w = new Worker(url);
+        w.onmessage = () => {
+          onBackgroundHeartbeatTick();
+        };
+        return w;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function requestScreenWakeLockIfPossible() {
+      try {
+        if ('wakeLock' in navigator && document.visibilityState === 'visible') {
+          wakeLockSentinel = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) {}
+    }
+
+    function releaseScreenWakeLockIfPossible() {
+      try {
+        if (wakeLockSentinel) {
+          wakeLockSentinel.release();
+          wakeLockSentinel = null;
+        }
+      } catch (e) {}
+    }
+
+    async function onBackgroundHeartbeatTick() {
+      if (!autoPostActive) return;
+
+      if (isPostingInProgress) {
+        document.getElementById('countdownDisplay').innerText = "পোস্ট হচ্ছে...";
+        return;
+      }
+
+      const nowMs = Date.now();
+      const remainingSec = Math.ceil((nextScheduledPostTimeMs - nowMs) / 1000);
+      secondsRemaining = remainingSec;
+
+      if (nowMs >= nextScheduledPostTimeMs) {
+        isPostingInProgress = true;
+        document.getElementById('countdownDisplay').innerText = "পোস্ট হচ্ছে...";
+        try {
+          await runAutoPostCycle();
+        } finally {
+          isPostingInProgress = false;
+          const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
+          secondsRemaining = intervalSec;
+          nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
+        }
+      }
+
+      document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(Math.max(0, secondsRemaining));
+    }
+
+    document.addEventListener('visibilitychange', async () => {
+      if (!autoPostActive) return;
+      if (document.visibilityState === 'visible') {
+        await requestScreenWakeLockIfPossible();
+        await onBackgroundHeartbeatTick();
+      } else {
+        // ট্যাব ব্যাকগ্রাউন্ডে গেলে সাথে সাথে পরবর্তী চেক নিশ্চিত করা
+        setTimeout(() => {
+          if (autoPostActive) onBackgroundHeartbeatTick();
+        }, 500);
+      }
+    });
+
     function startCountdownLoop() {
       clearInterval(countdownInterval);
-      countdownInterval = setInterval(async () => {
-        if (!autoPostActive) return;
+      const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
+      if (!nextScheduledPostTimeMs || nextScheduledPostTimeMs <= Date.now()) {
+        nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
+      }
+      requestScreenWakeLockIfPossible();
 
-        if (isPostingInProgress) {
-          document.getElementById('countdownDisplay').innerText = "পোস্ট হচ্ছে...";
-          return;
-        }
+      if (!heartbeatWorker) {
+        heartbeatWorker = createBackgroundHeartbeatWorker();
+      }
+      if (heartbeatWorker) {
+        heartbeatWorker.postMessage('start');
+      }
 
-        secondsRemaining--;
-
-        if (secondsRemaining <= 0) {
-          isPostingInProgress = true;
-          document.getElementById('countdownDisplay').innerText = "পোস্ট হচ্ছে...";
-          try {
-            await runAutoPostCycle();
-          } finally {
-            isPostingInProgress = false;
-            secondsRemaining = parseInt(document.getElementById('autoIntervalSelect').value, 10);
-          }
-        }
-
-        document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(Math.max(0, secondsRemaining));
+      countdownInterval = setInterval(() => {
+        onBackgroundHeartbeatTick();
       }, 1000);
     }
 
@@ -2291,7 +2378,12 @@
             drawTypingCardFrame(rCtx, activeItem, bgImg, typedTitle, typedSummary, progress);
             rCtx.restore();
 
-            if (pCtx) {
+            // ব্যাকগ্রাউন্ডে ট্যাব থাকলে ক্যানভাস ফ্রেম আপডেট ধরে রাখতে captureStream ফ্রেম পুশ করা
+            if (typeof stream.requestFrame === 'function') {
+              try { stream.requestFrame(); } catch (rfErr) {}
+            }
+
+            if (pCtx && document.visibilityState === 'visible') {
               pCtx.clearRect(0, 0, 1080, 1080);
               pCtx.drawImage(recordCanvas, 0, 0, 1080, 1080);
             }
