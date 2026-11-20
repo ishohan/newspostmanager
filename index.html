@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ef4444'/%3E%3Cstop offset='100%25' stop-color='%23f59e0b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M16 20h32v6H16zm0 11h24v5H16zm0 10h28v5H16z' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='43' r='6' fill='%230b1120'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ef4444'/%3E%3Cstop offset='100%25' stop-color='%23f59e0b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M16 20h32v6H16zm0 11h24v5H16zm0 10h28v5H16z' fill='%23ffffff'/%3E%3Ccircle cx='44' cy='43' r='6' fill='%230b1120'/%3E%3C/svg%3E">
   <title>AutoNews ULTIMATE - স্মার্ট অটো ফেসবুক পেজ ম্যানেজার</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
           <span class="bg-gradient-to-r from-red-600 to-amber-500 text-white text-xs px-2.5 py-0.5 rounded-full font-bold">ULTIMATE AI</span>
           <h1 class="text-2xl font-bold text-white tracking-tight">অটো নিউজ ও স্মার্ট পেজ পোস্ট ম্যানেজার</h1>
         </div>
-        <p class="text-xs text-slate-400 mt-1">উন্নত ফিল্টার • চমৎকার ইউনিক ছবি • সেরা খবর নির্বাচন • সম্পূর্ণ পোস্ট ও অটো পাবলিশ</p>
+        <p class="text-xs text-slate-400 mt-1">উন্নত ফিল্টার • চমৎকার ইউনিক ছবি • সেরা খবর নির্বাচন • সম্পূর্ণ পোস্ট ও অটো ভিডিও পাবলিশ</p>
       </div>
 
       <div class="flex flex-wrap items-center gap-3">
@@ -49,9 +49,15 @@
 
       <div class="flex flex-wrap items-center justify-center gap-3">
         <!-- বাংলাদেশ পিক টাইম মোড -->
-        <label class="text-xs text-slate-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-emerald-500/30 cursor-pointer" title="বাংলাদেশ সময় সকাল ৮টা - রাত ১১টা (বেস্ট পিক টাইম: সকাল ৯-১১টা, দুপুর ১-৩টা, বিকেল ৫-৬টা, রাত ৮-১১টা)">
+        <label class="text-xs text-slate-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-emerald-500/30 cursor-pointer" title="বাংলাদেশ সময় সকাল ৮টা - রাত ১১টা (বেস্ট পিক টাইম)">
           <input type="checkbox" id="bdPeakTimeOnly" checked class="accent-emerald-500 cursor-pointer">
           <span class="font-semibold text-emerald-400">🇧🇩 ডে পিক-টাইম মোড</span>
+        </label>
+
+        <!-- অটো-পোস্ট ও সরাসরি পোস্টে টাইপিং ভিডিও মোড -->
+        <label class="text-xs text-slate-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-purple-500/40 cursor-pointer" title="চালু থাকলে ছবির বদলে টাইপিং অ্যানিমেশন ভিডিও তৈরি করে ফেসবুক পেজে আপলোড করবে">
+          <input type="checkbox" id="autoPostTypingVideo" checked class="accent-purple-500 cursor-pointer">
+          <span class="font-semibold text-purple-300">🎬 অটো টাইপিং ভিডিও</span>
         </label>
 
         <!-- ইন্টারভ্যাল সিলেক্টর -->
@@ -78,6 +84,11 @@
         <!-- অটো পোস্ট টগল বাটন -->
         <button onclick="toggleAutoPost()" id="autoPostToggleBtn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 transition">
           ⚡ অটো-পোস্ট: OFF
+        </button>
+
+        <!-- সরাসরি এখনই ভিডিও পোস্ট বাটন -->
+        <button onclick="postTopNewsAsVideoNow()" id="postVideoNowBtn" class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow transition" title="প্রথম খবরটির টাইপিং ভিডিও তৈরি করে এখনই ফেসবুকে পোস্ট করবে">
+          🎥 এখনই ভিডিও পোস্ট
         </button>
       </div>
     </div>
@@ -132,7 +143,7 @@
       <button onclick="closeFbModal()" class="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-slate-300 w-8 h-8 rounded-full flex items-center justify-center font-bold">✕</button>
       
       <h2 class="text-xl font-bold text-white flex items-center gap-2">🔵 ফেসবুক পেজ কানেক্ট করুন</h2>
-      <p class="text-xs text-slate-400 mt-1">সরাসরি পেজে ফটো কার্ড ও সম্পূর্ণ পোস্ট করার জন্য আপনার Page ID এবং Page Access Token দিন।</p>
+      <p class="text-xs text-slate-400 mt-1">সরাসরি পেজে ফটো কার্ড ও ভিডিও পোস্ট করার জন্য আপনার Page ID এবং Page Access Token দিন।</p>
 
       <div class="mt-4 space-y-3">
         <div>
@@ -190,15 +201,44 @@
           </div>
         </div>
 
-        <!-- ডান পাশ: ইউনিক ফটো কার্ড -->
+        <!-- ডান পাশ: ইউনিক ফটো কার্ড ও AI টাইপিং ভিডিও স্টুডিও -->
         <div class="flex flex-col items-center">
-          <label class="text-xs text-slate-400 font-semibold mb-1 w-full text-left">ইউনিক ফটো কার্ড (1080x1080):</label>
+          <div class="w-full flex items-center justify-between gap-2 mb-1.5">
+            <label class="text-xs text-slate-400 font-semibold">ফটো কার্ড ও AI ভিডিও স্টুডিও (1080x1080):</label>
+            <select id="femaleVoiceSelect" class="bg-slate-950 border border-slate-700 text-amber-300 text-[11px] rounded-lg px-2 py-1 max-w-[205px] focus:outline-none">
+              <option value="">🎙️ বাংলা সংবাদ পাঠিকা (BD Pro)</option>
+            </select>
+          </div>
+
           <div class="w-full aspect-square bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 relative shadow-inner">
             <canvas id="photoCanvas" width="1080" height="1080" class="w-full h-full object-contain"></canvas>
+            <video id="generatedVideoPreview" controls class="hidden w-full h-full object-contain bg-black"></video>
+            <div id="videoRenderStatus" class="hidden absolute bottom-3 left-3 right-3 bg-slate-950/90 border border-amber-500/40 text-amber-300 text-[11px] font-semibold px-3 py-1.5 rounded-xl text-center">
+              🎬 টাইপিং অ্যানিমেশন ভিডিও তৈরি হচ্ছে...
+            </div>
           </div>
-          <button onclick="downloadCard()" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg transition">
-            📥 ফটো কার্ড ডাউনলোড করুন (.PNG)
-          </button>
+
+          <div class="mt-3 w-full grid grid-cols-2 gap-2">
+            <button onclick="speakNewsFemaleVoice()" id="speakFemaleBtn" class="bg-pink-600 hover:bg-pink-500 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow transition">
+              🎙️ মেয়ে কণ্ঠে শুনুন
+            </button>
+            <button onclick="stopFemaleVoice()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+              ⏹️ ভয়েস বন্ধ
+            </button>
+          </div>
+
+          <div class="mt-2 w-full grid grid-cols-2 gap-2">
+            <button onclick="generateTypingVideoWithVoice()" id="generateVideoBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg transition">
+              🎬 টাইপিং ভিডিও বানান
+            </button>
+            <button onclick="downloadCard()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg transition">
+              📥 কার্ড (.PNG)
+            </button>
+          </div>
+
+          <a id="downloadVideoLink" class="hidden mt-2 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded-xl text-xs text-center shadow transition">
+            ⬇️ তৈরি করা ভিডিও ডাউনলোড করুন
+          </a>
         </div>
       </div>
 
@@ -441,7 +481,6 @@
       if (item.title.length >= 20 && item.title.length <= 115) score += 20;
       if (item.hasRealImage) score += 40;
 
-      // খেলার খবর ও দেশের বর্তমান রাজনীতির খবরকে সমান সর্বোচ্চ গুরুত্ব দেওয়া হবে
       if (isBangladeshSportsNews(item) || item.isBdSports) {
         score += 180;
       } else if (isBangladeshPoliticsNews(item)) {
@@ -453,7 +492,6 @@
       return Math.round(score);
     }
 
-    // বাংলাদেশ সময় (Asia/Dhaka) অনুযায়ী দিনের বেলার বেস্ট পিক-টাইম চেকার
     function getBangladeshPeakTimeInfo() {
       const now = new Date();
       const bdTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Dhaka' });
@@ -461,14 +499,8 @@
       const hour = bdDate.getHours();
       const minute = bdDate.getMinutes();
 
-      // রাত ১১:৩০ থেকে সকাল ০৭:৩০ পর্যন্ত অফ-পিক (ঘুমের সময়) — দিনের বেলা ০৭:৩০ - ২৩:৩০ সক্রিয়
       const isDaytimeActive = (hour > 7 || (hour === 7 && minute >= 30)) && (hour < 23 || (hour === 23 && minute <= 30));
 
-      // সুপার পিক-টাইম স্লট (বাংলাদেশে ফেসবুক অডিয়েন্স সবচেয়ে বেশি সক্রিয় থাকে):
-      // ১) সকাল ০৮:৩০ - ১১:৩০ (সকালের চা ও অফিস শুরুর সময়)
-      // ২) দুপুর ০১:০০ - ০৩:৩০ (লাঞ্চ ও দুপুরের বিরতি)
-      // ৩) বিকেল ০৫:০০ - ০৭:০০ (অফিস ছুটি ও সন্ধ্যার আড্ডা)
-      // ৪) রাত ০৮:০০ - ১১:১৫ (রাতের প্রাইম টাইম)
       let slotName = "সাধারণ দিনের সময়";
       let isSuperPeak = false;
 
@@ -522,7 +554,6 @@
       avoidedDuplicatesCount += localAvoided;
       document.getElementById('dedupStatsBadge').innerText = `🛡️ ডুপ্লিকেট এভয়েড: ${avoidedDuplicatesCount}টি`;
 
-      // একটি খেলার খবর (বিশেষ করে স্পোর্টস) এবং তার পর একটি রাজনীতির খবর — এভাবে পর্যায়ক্রমে সাজানো হবে
       const sortedAll = uniqueBestList.sort((a, b) => b.qualityScore - a.qualityScore);
       const sportsQueue = sortedAll.filter(n => isBangladeshSportsNews(n) || n.isBdSports || isGeneralSportsNews(n));
       const politicsQueue = sortedAll.filter(n => !sportsQueue.includes(n) && isBangladeshPoliticsNews(n));
@@ -621,31 +652,53 @@
       }, 1000);
     }
 
+    let skippedOffPeakIds = new Set();
+
     async function runAutoPostCycle() {
       if (!autoPostActive || !fbConfig) return;
 
       const peakOnly = document.getElementById('bdPeakTimeOnly')?.checked;
       const peakInfo = getBangladeshPeakTimeInfo();
 
-      if (peakOnly && !peakInfo.isDaytimeActive) {
-        logActivity("🌙 এখন বাংলাদেশের গভীর রাত (অফ-পিক টাইম)। সকাল ০৭:৩০-এ পিক-টাইম শুরু হলে অটো-পোস্ট চালু হবে।");
-        return;
-      }
-
       allFetchedNews = deduplicateAndSelectBestNews(allFetchedNews);
       renderNewsGrid();
 
-      const nextNews = allFetchedNews[0];
-
-      if (!nextNews) {
-        logActivity("নতুন খেলার ও তাজা খবর সংগ্রহ করা হচ্ছে...");
+      if (!allFetchedNews || allFetchedNews.length === 0) {
+        skippedOffPeakIds.clear();
+        logActivity("নতুন খেলার, রাজনীতির ও তাজা খবর সংগ্রহ করা হচ্ছে...");
         await fetchAllCategoriesNews();
         return;
       }
 
-      const priorityTag = isBangladeshSportsNews(nextNews) ? "🇧🇩🏏⚽ বাংলাদেশ স্পোর্টস অগ্রাধিকার" : (isGeneralSportsNews(nextNews) ? "⚽ স্পোর্টস অগ্রাধিকার" : "📰 শীর্ষ সংবাদ");
-      logActivity(`🚀 [${peakInfo.slotName} | ${priorityTag}] পোস্ট হচ্ছে: "${nextNews.title.substring(0, 40)}..."`);
-      await postNewsItemToFacebook(nextNews, true);
+      let nextNews = allFetchedNews[0];
+      let modeLabel = peakInfo.isSuperPeak ? `🔥 ${peakInfo.slotName}` : `🕒 ${peakInfo.slotName}`;
+
+      if (peakOnly && !peakInfo.isDaytimeActive) {
+        const altCandidate = allFetchedNews.find(n => !skippedOffPeakIds.has(n.id));
+        if (altCandidate) {
+          nextNews = altCandidate;
+          skippedOffPeakIds.add(altCandidate.id);
+          modeLabel = "🌙 অফ-পিক টাইমেও অন্যান্য খবর সক্রিয়";
+        } else {
+          skippedOffPeakIds.clear();
+          nextNews = allFetchedNews[0];
+          modeLabel = "🔄 অফ-পিক রানিং কিউ";
+        }
+      }
+
+      const priorityTag = isBangladeshSportsNews(nextNews)
+        ? "🇧🇩🏏⚽ বাংলাদেশ স্পোর্টস"
+        : (isBangladeshPoliticsNews(nextNews) ? "🚨 রাজনীতি ও পরিস্থিতি" : "📰 অন্যান্য তাজা খবর");
+
+      logActivity(`🚀 [${modeLabel} | ${priorityTag}] পোস্ট হচ্ছে: "${nextNews.title.substring(0, 40)}..."`);
+      const postedOk = await postNewsItemToFacebook(nextNews, true);
+
+      if (!postedOk && allFetchedNews.length > 1) {
+        const failedItem = allFetchedNews.shift();
+        allFetchedNews.push(failedItem);
+        renderNewsGrid();
+        logActivity(`⏭️ "${failedItem.title.substring(0, 30)}..." সামনে থেকে সরিয়ে পরবর্তী খবর আনা হয়েছে।`);
+      }
     }
 
     function openFbModal() {
@@ -728,7 +781,6 @@
       }
     }
 
-    // সম্পূর্ণ পোস্ট টেক্সট প্রস্তুতকারক (সোর্স বা ক্যাটেগরি নেই; শেষে বাংলাদেশ ও বাংলাভাষীদের জনপ্রিয় হ্যাশট্যাগ)
     function buildPolishedCaption(item) {
       const cleanTitle = item.title.replace(/^["']|["']$/g, '').trim();
       let cleanDesc = item.description.trim();
@@ -749,7 +801,6 @@
       return `${cleanTitle}\n\n${formattedBody}\n\n━━━━━━━━━━━━━━\n📅 ${getTodayFormattedDate()} | ${pageName}\n\n${hashTags}`;
     }
 
-    // প্রতিবার ইউনিক ও টপিক-ভিত্তিক ছবি নির্বাচনের ট্র্যাকার (যাতে একই ছবি একাধিক খবরে না আসে)
     let usedImageUrls = new Set();
 
     const topicImagePools = {
@@ -838,123 +889,151 @@
           return candidate;
         }
       }
-      // যদি ওই পুলের সব ছবি ব্যবহৃত হয়ে যায়, তবে general পুল থেকে অব্যবহৃত ছবি নেবে
       for (const fallback of topicImagePools.general) {
         if (!usedImageUrls.has(fallback)) {
           usedImageUrls.add(fallback);
           return fallback;
         }
       }
-      // একদম সব শেষ হয়ে গেলে ইউনিক সিগনেচারসহ ছবি দেবে যাতে ব্রাউজার ও কার্ডে আলাদা দেখায়
       const chosen = pool[startIdx];
       return `${chosen}&sig=${Math.abs(hash)}`;
     }
 
-    // খেলোয়াড় ও ব্যক্তিত্ব অনুযায়ী ডেডিকেটেড প্রোফাইল ও ম্যাচ-থিমড ভিজ্যুয়াল জেনারেটর (AI Canvas Portrait + Cricket Match Art)
     const entityMediaRegistry = [
       {
-        keys: ['হৃদয়', 'হৃদয়', 'তাওহীদ হৃদয়', 'তাওহীদ হৃদয়', 'towhid hridoy', 'hridoy'],
+        keys: ['তাওহীদ হৃদয়', 'তাওহীদ হৃদয়', 'towhid hridoy'],
+        sportKeywords: ['ক্রিকেট', 'ব্যাটার', 'রান', 'সেঞ্চুরি', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket', 'runs', 'match'],
+        shortKeys: ['হৃদয়', 'হৃদয়', 'hridoy'],
         nameBn: 'তাওহীদ হৃদয়',
         roleBn: 'বাংলাদেশ ক্রিকেট দল • মিডল অর্ডার ব্যাটার',
         accent: '#10b981',
-        secondary: '#059669',
         tagBn: '🇧🇩 টাইগার্স • হৃদয়'
       },
       {
-        keys: ['লিটন', 'লিটন দাস', 'litton das', 'liton'],
+        keys: ['লিটন দাস', 'লিটন কুমার দাস', 'litton das'],
+        sportKeywords: ['ক্রিকেট', 'ব্যাটার', 'উইকেটকিপার', 'রান', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket'],
+        shortKeys: ['লিটন', 'liton'],
         nameBn: 'লিটন দাস',
         roleBn: 'বাংলাদেশ ক্রিকেট দল • ব্যাটার ও উইকেটকিপার',
         accent: '#38bdf8',
-        secondary: '#0284c7',
         tagBn: '🇧🇩 টাইগার্স • লিটন দাস'
       },
       {
-        keys: ['মিরাজ', 'মেহেদী হাসান মিরাজ', 'mehedi hasan miraz', 'miraz'],
+        keys: ['মেহেদী হাসান মিরাজ', 'mehedi hasan miraz'],
+        sportKeywords: ['ক্রিকেট', 'অলরাউন্ডার', 'উইকেট', 'রান', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket'],
+        shortKeys: ['মিরাজ', 'miraz'],
         nameBn: 'মেহেদী হাসান মিরাজ',
         roleBn: 'বাংলাদেশ ক্রিকেট দল • অলরাউন্ডার',
         accent: '#f59e0b',
-        secondary: '#d97706',
         tagBn: '🇧🇩 টাইগার্স • মিরাজ'
       },
       {
-        keys: ['সাকিব', 'সাকিব আল হাসান', 'shakib al hasan', 'shakib'],
+        keys: ['সাকিব আল হাসান', 'shakib al hasan'],
+        sportKeywords: ['ক্রিকেট', 'অলরাউন্ডার', 'উইকেট', 'রান', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket'],
+        shortKeys: ['সাকিব', 'shakib'],
         nameBn: 'সাকিব আল হাসান',
         roleBn: 'অলরাউন্ডার • ক্রিকেট',
         accent: '#ef4444',
-        secondary: '#b91c1c',
         tagBn: '🏏 সাকিব আল হাসান'
       },
       {
-        keys: ['তামিম', 'তামিম ইকবাল', 'tamim iqbal', 'tamim'],
+        keys: ['তামিম ইকবাল', 'tamim iqbal'],
+        sportKeywords: ['ক্রিকেট', 'ওপেনার', 'রান', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket'],
+        shortKeys: ['তামিম', 'tamim'],
         nameBn: 'তামিম ইকবাল',
         roleBn: 'বাংলাদেশ ক্রিকেট • ওপেনার',
         accent: '#22c55e',
-        secondary: '#15803d',
         tagBn: '🇧🇩 তামিম ইকবাল'
       },
       {
-        keys: ['তাসকিন', 'taskin ahmed', 'taskin'],
+        keys: ['তাসকিন আহমেদ', 'taskin ahmed'],
+        sportKeywords: ['ক্রিকেট', 'বোলার', 'উইকেট', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket'],
+        shortKeys: ['তাসকিন', 'taskin'],
         nameBn: 'তাসকিন আহমেদ',
         roleBn: 'বাংলাদেশ ক্রিকেট দল • ফাস্ট বোলার',
         accent: '#f97316',
-        secondary: '#c2410c',
         tagBn: '🇧🇩 টাইগার্স • তাসকিন'
       },
       {
-        keys: ['মুস্তাফিজ', 'mustafizur rahman', 'mustafiz'],
+        keys: ['মুস্তাফিজুর রহমান', 'mustafizur rahman'],
+        sportKeywords: ['ক্রিকেট', 'পেসার', 'উইকেট', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'আইপিএল', 'cricket'],
+        shortKeys: ['মুস্তাফিজ', 'mustafiz'],
         nameBn: 'মুস্তাফিজুর রহমান',
         roleBn: 'বাংলাদেশ ক্রিকেট দল • পেসার',
         accent: '#06b6d4',
-        secondary: '#0e7490',
         tagBn: '🇧🇩 দ্য ফিজ • মুস্তাফিজ'
       },
       {
-        keys: ['শান্ত', 'নাজমুল হোসেন শান্ত', 'shanto'],
+        keys: ['নাজমুল হোসেন শান্ত', 'নাজমুল শান্ত', 'najmul hossain shanto'],
+        sportKeywords: ['ক্রিকেট', 'অধিনায়ক', 'ব্যাটার', 'রান', 'ম্যাচ', 'টাইগার', 'বিসিবি', 'বিপিএল', 'cricket'],
+        shortKeys: ['শান্ত', 'shanto'],
         nameBn: 'নাজমুল হোসেন শান্ত',
         roleBn: 'বাংলাদেশ ক্রিকেট দল • ব্যাটার',
         accent: '#10b981',
-        secondary: '#047857',
         tagBn: '🇧🇩 টাইগার্স • শান্ত'
       },
       {
-        keys: ['রাবাদা', 'ক্যাগিসো রাবাদা', 'rabada'],
+        keys: ['ক্যাগিসো রাবাদা', 'kagiso rabada'],
+        sportKeywords: ['ক্রিকেট', 'বোলার', 'উইকেট', 'ম্যাচ', 'দক্ষিণ আফ্রিকা', 'cricket'],
+        shortKeys: ['রাবাদা', 'rabada'],
         nameBn: 'ক্যাগিসো রাবাদা',
         roleBn: 'দক্ষিণ আফ্রিকা • ফাস্ট বোলার',
         accent: '#eab308',
-        secondary: '#a16207',
         tagBn: '🏏 রাবাদা'
       },
       {
-        keys: ['বাভুমা', 'টেম্বা বাভুমা', 'bavuma'],
+        keys: ['টেম্বা বাভুমা', 'temba bavuma'],
+        sportKeywords: ['ক্রিকেট', 'অধিনায়ক', 'ব্যাটার', 'ম্যাচ', 'দক্ষিণ আফ্রিকা', 'cricket'],
+        shortKeys: ['বাভুমা', 'bavuma'],
         nameBn: 'টেম্বা বাভুমা',
         roleBn: 'দক্ষিণ আফ্রিকা • অধিনায়ক',
         accent: '#16a34a',
-        secondary: '#166534',
         tagBn: '🏏 বাভুমা'
       },
       {
-        keys: ['হামজা', 'হামজা চৌধুরী', 'hamza choudhury', 'জামাল ভূঁইয়া', 'jamal bhuyan'],
+        keys: ['হামজা চৌধুরী', 'hamza choudhury', 'জামাল ভূঁইয়া', 'jamal bhuyan', 'বাংলাদেশ ফুটবল'],
+        sportKeywords: ['ফুটবল', 'বাফুফে', 'গোল', 'ম্যাচ', 'লিগ', 'football'],
+        shortKeys: ['হামজা', 'বাফুফে'],
         nameBn: 'বাংলাদেশ ফুটবল',
         roleBn: 'বাংলাদেশ জাতীয় ফুটবল দল • ম্যাচ আপডেট',
         accent: '#22c55e',
-        secondary: '#15803d',
         tagBn: '⚽ বাংলাদেশ ফুটবল'
-      },
-      {
-        keys: ['সংঘর্ষ', 'মারামারি', 'গন্ডগোল', 'আগুন', 'অগ্নিসংযোগ', 'ভাঙচুর', 'বিক্ষোভ', 'অবরোধ', 'হরতাল', 'রাজনীতি', 'রাজনৈতিক'],
-        nameBn: 'দেশ ও রাজনীতি',
-        roleBn: 'চলমান রাজনৈতিক ও আইনশৃঙ্খলা পরিস্থিতি',
-        accent: '#ef4444',
-        secondary: '#b91c1c',
-        tagBn: '🚨 রাজনীতি ও পরিস্থিতি'
       }
     ];
 
-    function findMatchedEntity(title = "", badge = "") {
+    function hasExactWordMatch(text, keyword) {
+      const delimiters = new Set([' ', '\n', '\r', '\t', ',', "'", '"', '`', '“', '”', '‘', '’', '।', '?', '!', ':', ';', '(', ')', '[', ']', '-']);
+      const lowerText = text.toLowerCase();
+      const lowerKey = keyword.toLowerCase();
+      let pos = lowerText.indexOf(lowerKey);
+      while (pos !== -1) {
+        const beforeOk = pos === 0 || delimiters.has(lowerText[pos - 1]);
+        const afterPos = pos + lowerKey.length;
+        const afterOk = afterPos >= lowerText.length || delimiters.has(lowerText[afterPos]);
+        if (beforeOk && afterOk) return true;
+        pos = lowerText.indexOf(lowerKey, pos + 1);
+      }
+      return false;
+    }
+
+    function findMatchedEntity(title = "", badge = "", isGlobal = false) {
+      // বিশ্ব সংবাদ বা আন্তর্জাতিক খবরে কখনোই বাংলাদেশ ক্রিকেট প্লেয়ার কার্ড বসবে না
+      if (isGlobal || badge.includes('বিশ্ব') || badge.includes('আন্তর্জাতিক')) {
+        return null;
+      }
       const text = `${title} ${badge}`.toLowerCase();
       for (const entry of entityMediaRegistry) {
-        if (entry.keys.some(k => text.includes(k.toLowerCase()))) {
+        // ১. পূর্ণ নাম মিললে সরাসরি রিটার্ন
+        if (entry.keys.some(k => hasExactWordMatch(text, k))) {
           return entry;
+        }
+        // ২. সংক্ষিপ্ত নাম (যেমন: 'শান্ত', 'হৃদয়') মিললে অবশ্যই খেলার প্রাসঙ্গিক শব্দ থাকতে হবে
+        // যাতে "শান্তি ঘোষণা" বা "হৃদয়বিদারক" এর মতো শব্দে ভুল ম্যাচ না হয়!
+        if (entry.shortKeys && entry.shortKeys.some(sk => hasExactWordMatch(text, sk))) {
+          const hasSportContext = (entry.sportKeywords || []).some(sw => text.includes(sw.toLowerCase()));
+          if (hasSportContext) {
+            return entry;
+          }
         }
       }
       return null;
@@ -962,87 +1041,55 @@
 
     function createEntityGraphicDataUrl(entity, title) {
       const c = document.createElement('canvas');
-      c.width = 900;
-      c.height = 600;
+      c.width = 1080;
+      c.height = 1080;
       const g = c.getContext('2d');
 
-      // স্টুডিও ও স্টেডিয়াম ফ্লাডলাইট ব্যাকগ্রাউন্ড
-      const bg = g.createLinearGradient(0, 0, 900, 600);
+      const bg = g.createLinearGradient(0, 0, 1080, 1080);
       bg.addColorStop(0, '#071324');
-      bg.addColorStop(0.55, '#0f2942');
+      bg.addColorStop(0.5, '#0f2942');
       bg.addColorStop(1, '#060d18');
       g.fillStyle = bg;
-      g.fillRect(0, 0, 900, 600);
+      g.fillRect(0, 0, 1080, 1080);
 
-      // সবুজ পিচ / মাঠের আভা
-      const turfGrad = g.createRadialGradient(450, 560, 40, 450, 560, 480);
-      turfGrad.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+      const turfGrad = g.createRadialGradient(540, 520, 40, 540, 520, 520);
+      turfGrad.addColorStop(0, 'rgba(16, 185, 129, 0.28)');
       turfGrad.addColorStop(1, 'rgba(16, 185, 129, 0)');
       g.fillStyle = turfGrad;
-      g.fillRect(0, 0, 900, 600);
+      g.fillRect(0, 0, 1080, 1080);
 
-      // ডেকোরেটিভ রিং ও হাইলাইট
+      // ডান পাশে পরিচ্ছন্ন জ্যামিতিক স্টেডিয়াম রিং (কোনো ডুপ্লিকেট টাইটেল বা প্লেসহোল্ডার মানুষ আইকন ছাড়াই)
       g.strokeStyle = entity.accent;
-      g.globalAlpha = 0.25;
+      g.globalAlpha = 0.22;
       g.lineWidth = 3;
       g.beginPath();
-      g.arc(700, 240, 175, 0, Math.PI * 2);
+      g.arc(820, 320, 210, 0, Math.PI * 2);
       g.stroke();
       g.beginPath();
-      g.arc(700, 240, 130, 0, Math.PI * 2);
+      g.arc(820, 320, 150, 0, Math.PI * 2);
       g.stroke();
       g.globalAlpha = 1;
 
-      // খেলোয়াড়ের স্টাইলাইজড অ্যাভাটার ব্যাজ
       g.fillStyle = entity.accent;
-      g.beginPath();
-      g.arc(700, 225, 88, 0, Math.PI * 2);
-      g.fill();
-
-      g.fillStyle = '#071324';
-      g.beginPath();
-      g.arc(700, 200, 32, 0, Math.PI * 2);
-      g.fill();
-      g.beginPath();
-      g.ellipse(700, 268, 52, 34, 0, Math.PI, 0, false);
-      g.fill();
-
-      // খেলোয়াড়ের নাম ও পরিচয় ব্যাজ (বাম পাশে)
-      g.fillStyle = entity.accent;
-      roundRect(g, 55, 65, 340, 44, 10);
+      roundRect(g, 60, 150, 360, 48, 12);
       g.fillStyle = '#ffffff';
-      g.font = "bold 22px 'Hind Siliguri', sans-serif";
+      g.font = "bold 24px 'Hind Siliguri', sans-serif";
       g.textAlign = 'left';
-      g.fillText(entity.tagBn, 72, 95);
+      g.fillText(entity.tagBn, 80, 182);
 
       g.fillStyle = '#ffffff';
-      g.font = "bold 54px 'Hind Siliguri', sans-serif";
-      g.fillText(entity.nameBn, 55, 185);
+      g.font = "bold 62px 'Hind Siliguri', sans-serif";
+      g.fillText(entity.nameBn, 60, 275);
 
-      g.fillStyle = '#cbd5e1';
-      g.font = "600 24px 'Hind Siliguri', sans-serif";
-      g.fillText(entity.roleBn, 55, 232);
-
-      // খবরের শিরোনামের সংক্ষিপ্ত হাইলাইট
-      g.fillStyle = 'rgba(255, 255, 255, 0.92)';
-      g.font = "bold 28px 'Hind Siliguri', sans-serif";
-      wrapText(g, title, 55, 320, 500, 40);
-
-      // নিচের স্ট্যাটাস বার
-      g.fillStyle = 'rgba(2, 6, 23, 0.78)';
-      g.fillRect(0, 525, 900, 75);
-      g.fillStyle = entity.accent;
-      g.font = "bold 20px 'Hind Siliguri', sans-serif";
-      g.fillText('MATCH & PLAYER SPOTLIGHT', 55, 570);
-      g.textAlign = 'right';
       g.fillStyle = '#94a3b8';
-      g.fillText(pageName, 845, 570);
+      g.font = "600 28px 'Hind Siliguri', sans-serif";
+      g.fillText(entity.roleBn, 60, 325);
 
-      return c.toDataURL('image/jpeg', 0.9);
+      return c.toDataURL('image/jpeg', 0.92);
     }
 
-    function getSmartDefaultImage(badge, title = "") {
-      const matchedEntity = findMatchedEntity(title, badge);
+    function getSmartDefaultImage(badge, title = "", isGlobal = false) {
+      const matchedEntity = findMatchedEntity(title, badge, isGlobal);
       if (matchedEntity) {
         return createEntityGraphicDataUrl(matchedEntity, title);
       }
@@ -1073,9 +1120,8 @@
       return pickUniqueFromPool(pool, title || badge);
     }
 
-    // খেলোয়াড় বা ব্যক্তিত্ব ম্যাচ করলে তার নিজস্ব ডেডিকেটেড ভিজ্যুয়াল/ছবি ব্যবহার করা হবে যাতে অপ্রাসঙ্গিক ছবি না আসে
-    async function resolveContextualArticleImage(rawTitle, badge, existingImgUrl, hasRealImage) {
-      const entity = findMatchedEntity(rawTitle, badge);
+    async function resolveContextualArticleImage(rawTitle, badge, existingImgUrl, hasRealImage, isGlobal = false) {
+      const entity = findMatchedEntity(rawTitle, badge, isGlobal);
       if (entity) {
         return { image: createEntityGraphicDataUrl(entity, rawTitle), hasRealImage: true };
       }
@@ -1084,7 +1130,7 @@
         return { image: existingImgUrl, hasRealImage: true };
       }
 
-      return { image: getSmartDefaultImage(badge, rawTitle), hasRealImage: false };
+      return { image: getSmartDefaultImage(badge, rawTitle, isGlobal), hasRealImage: false };
     }
 
     function loadCorsSafeImage(url, timeoutMs = 6000) {
@@ -1108,7 +1154,7 @@
             done(img);
           };
           img.onerror = () => {
-            if (!isProxyRetry && !srcUrl.includes('wsrv.nl') && !srcUrl.includes('unsplash.com')) {
+            if (!isProxyRetry && !srcUrl.includes('wsrv.nl') && !srcUrl.includes('unsplash.com') && !srcUrl.startsWith('data:')) {
               const proxied = `https://wsrv.nl/?url=${encodeURIComponent(srcUrl)}&w=1080&h=1080&fit=cover&output=jpg`;
               tryLoad(proxied, true);
             } else {
@@ -1207,6 +1253,64 @@
       });
     }
 
+    async function postTopNewsAsVideoNow() {
+      if (!fbConfig || !fbConfig.accessToken) {
+        alert("প্রথমে ফেসবুক পেজ কানেক্ট করুন।");
+        openFbModal();
+        return;
+      }
+      const item = allFetchedNews[0];
+      if (!item) {
+        alert("কোনো খবর লোড হয়নি। আগে খবর লোড হতে দিন।");
+        return;
+      }
+      const toggleEl = document.getElementById('autoPostTypingVideo');
+      if (toggleEl) toggleEl.checked = true;
+
+      const btn = document.getElementById('postVideoNowBtn');
+      if (btn) { btn.disabled = true; btn.innerText = "⏳ ভিডিও যাচ্ছে..."; }
+      try {
+        const caption = buildPolishedCaption(item);
+        logActivity(`🎬 ভিডিও তৈরি হচ্ছে: "${item.title.substring(0, 32)}..."`);
+        const videoBlob = await generateTypingVideoWithVoice(item, false);
+        if (!videoBlob || videoBlob.size === 0) {
+          throw new Error("ভিডিও রেকর্ড হয়নি (Blob size 0)");
+        }
+        logActivity(`📤 ফেসবুক /videos এন্ডপয়েন্টে (${(videoBlob.size / 1024).toFixed(0)} KB, ${videoBlob.type}) আপলোড হচ্ছে...`);
+        const resData = await uploadVideoBlobToFacebookPage(videoBlob, caption);
+        if (!postedNewsStore.some(n => n.id === item.id)) {
+          postedNewsStore.unshift(item);
+          try { localStorage.setItem('posted_news_store', JSON.stringify(postedNewsStore)); } catch(e) {}
+        }
+        allFetchedNews = allFetchedNews.filter(n => n.id !== item.id);
+        renderNewsGrid();
+        logActivity(`✅ ভিডিও পোস্ট সফল! Video ID: ${resData.id || 'OK'}`);
+      } catch (err) {
+        logActivity(`❌ ভিডিও আপলোড এরর: ${err.message}`);
+        alert(`ফেসবুকে ভিডিও আপলোড ত্রুটি:\n${err.message}`);
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerText = "🎥 এখনই ভিডিও পোস্ট"; }
+      }
+    }
+
+    async function uploadVideoBlobToFacebookPage(videoBlob, caption) {
+      if (!videoBlob || videoBlob.size === 0) {
+        throw new Error("ভিডিও ফাইল তৈরি হয়নি (Empty Blob — ব্রাউজারে ক্যানভাস রেকর্ডিং ব্লক হয়েছে)");
+      }
+      const isMp4 = (videoBlob.type || '').includes('mp4');
+      const fileName = isMp4 ? 'news-typing-video.mp4' : 'news-typing-video.webm';
+      const formData = new FormData();
+      formData.append('source', videoBlob, fileName);
+      formData.append('description', caption);
+      formData.append('access_token', fbConfig.accessToken);
+
+      const endpoint = `https://graph-video.facebook.com/v20.0/${fbConfig.pageId}/videos`;
+      const response = await fetch(endpoint, { method: 'POST', body: formData });
+      const result = await response.json();
+      if (result.error) throw new Error(result.error.message);
+      return result;
+    }
+
     async function postNewsItemToFacebook(item, isAuto = false, customCaption = null) {
       if (!fbConfig || !fbConfig.accessToken) {
         if (!isAuto) alert("প্রথমে ফেসবুক পেজ কানেক্ট করুন।");
@@ -1214,6 +1318,7 @@
       }
 
       const caption = customCaption || buildPolishedCaption(item);
+      const wantTypingVideo = document.getElementById('autoPostTypingVideo')?.checked;
 
       const attemptPhotoUpload = async () => {
         const photoBlob = await generateCardBlob(item);
@@ -1233,12 +1338,20 @@
       };
 
       try {
-        try {
-          await attemptPhotoUpload();
-        } catch (firstErr) {
-          // প্রথমবার নেটওয়ার্ক বা ইমেজ এরর হলে ১ বার রিট্রাই করবে
-          await new Promise(r => setTimeout(r, 1500));
-          await attemptPhotoUpload();
+        if (wantTypingVideo && typeof MediaRecorder !== 'undefined') {
+          logActivity(`🎬 টাইপিং ভিডিও তৈরি ও আপলোড হচ্ছে: "${item.title.substring(0, 32)}..."`);
+          const videoBlob = await generateTypingVideoWithVoice(item, !isAuto && currentSelectedNews && currentSelectedNews.id === item.id);
+          if (!videoBlob || videoBlob.size === 0) {
+            throw new Error("MediaRecorder ভিডিও ব্লব খালি ছিল");
+          }
+          await uploadVideoBlobToFacebookPage(videoBlob, caption);
+        } else {
+          try {
+            await attemptPhotoUpload();
+          } catch (firstErr) {
+            await new Promise(r => setTimeout(r, 1500));
+            await attemptPhotoUpload();
+          }
         }
 
         if (!postedNewsStore.some(n => n.id === item.id)) {
@@ -1249,15 +1362,14 @@
         allFetchedNews = allFetchedNews.filter(n => n.id !== item.id);
 
         renderNewsGrid();
-        logActivity(`✅ সফলভাবে ফেসবুকে পোস্ট হয়েছে: "${item.title.substring(0, 35)}..."`);
+        logActivity(`✅ সফলভাবে ফেসবুকে ${wantTypingVideo ? 'টাইপিং ভিডিও' : 'ফটো কার্ড'} পোস্ট হয়েছে: "${item.title.substring(0, 32)}..."`);
         return true;
       } catch (err) {
-        // অটো-পোস্ট চলাকালে কোনো একটি নিউজ বারবার ফেইল করলে সেটিকে কিউ থেকে সরিয়ে পরের নিউজে যাবে যাতে অটো-পোস্ট আটকে না থাকে
-        if (isAuto) {
-          allFetchedNews = allFetchedNews.filter(n => n.id !== item.id);
-          renderNewsGrid();
+        if (wantTypingVideo) {
+          logActivity(`❌ ভিডিও পোস্ট ব্যর্থ: ${err.message}`);
+        } else {
+          logActivity(`❌ পোস্ট ব্যর্থ (${err.message})`);
         }
-        logActivity(`❌ পোস্ট ব্যর্থ (${err.message}) — পরবর্তী খবরে যাচ্ছে...`);
         return false;
       }
     }
@@ -1281,7 +1393,7 @@
         feedback.innerHTML = `<span class="text-emerald-400 font-bold">✅ সফলভাবে পোস্ট হয়েছে!</span>`;
         setTimeout(() => closeModal(), 1000);
       } else {
-        feedback.innerHTML = `<span class="text-red-400 font-bold">❌ পোস্ট ব্যর্থ হয়েছে।</span>`;
+        feedback.innerHTML = `<span class="text-red-400 font-bold">❌ পোস্ট ব্যর্থ হয়েছে (উপরের লাইভ লগ দেখুন)।</span>`;
       }
     }
 
@@ -1359,16 +1471,16 @@
           if (matches) imgUrl = matches[1];
         }
         
-        const matchedEntity = findMatchedEntity(rawTitle, src.badge);
+        const matchedEntity = findMatchedEntity(rawTitle, src.badge, !!src.isGlobal);
         let hasRealImage = !!(imgUrl && imgUrl.startsWith('http') && !imgUrl.includes('gstatic') && !imgUrl.includes('google') && !usedImageUrls.has(imgUrl));
         if (matchedEntity) {
-          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, hasRealImage);
+          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, hasRealImage, !!src.isGlobal);
           imgUrl = resolved.image;
           hasRealImage = resolved.hasRealImage;
         } else if (hasRealImage) {
           usedImageUrls.add(imgUrl);
         } else {
-          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, false);
+          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, false, !!src.isGlobal);
           imgUrl = resolved.image;
           hasRealImage = resolved.hasRealImage;
         }
@@ -1390,7 +1502,6 @@
     }
 
     async function fetchRssItemsWithFallback(rssUrl) {
-      // ১) প্রথমে rss2json চেষ্টা
       try {
         const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
         const res = await fetch(apiUrl);
@@ -1400,7 +1511,6 @@
         }
       } catch (e) {}
 
-      // ২) rss2json রেট-লিমিট বা ব্যর্থ হলে AllOrigins প্রক্সি দিয়ে সরাসরি XML পার্স করা
       try {
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
         const res = await fetch(proxyUrl);
@@ -1459,27 +1569,27 @@
 
     async function fetchAllCategoriesNews() {
       const smartMixSources = [
-        sourcesData.bd_sports[0],    // BDCricTime (বাংলাদেশ ক্রিকেট)
-        sourcesData.bd_sports[1],    // CricketFrenzy
-        sourcesData.bd_sports[2],    // প্রথম আলো খেলা
-        sourcesData.bd_sports[3],    // বাংলাদেশ ফুটবল (BFF, হামজা, জামাল)
-        sourcesData.bd_sports[4],    // বাংলাদেশ ক্রিকেট ও খেলোয়াড় (সাকিব, তামিম, লিটন, শান্ত)
-        sourcesData.bd_sports[5],    // জাগোনিউজ খেলা
-        sourcesData.bd_sports[6],    // রাইজিংবিডি খেলা
-        sourcesData.bd_sports[7],    // সময় টিভি খেলা
-        sourcesData.intl_cricket[0], // ESPNcricinfo
-        sourcesData.intl_cricket[1], // Cricbuzz
-        sourcesData.intl_sports[0],  // ESPN
-        sourcesData.intl_sports[1],  // BBC Sport
-        sourcesData.intl_sports[9],  // Goal.com (ফুটবল)
-        sourcesData.bd_bn[24],       // বাংলাদেশ রাজনীতি ও পরিস্থিতি (সংঘর্ষ, মারামারি, আগুন, বিক্ষোভ)
-        sourcesData.bd_bn[0],        // প্রথম আলো
-        sourcesData.bd_bn[1],        // বাংলাদেশ প্রতিদিন
-        sourcesData.bd_bn[2],        // কালের কণ্ঠ
-        sourcesData.bd_bn[22],       // সময় টিভি
-        sourcesData.bd_bn[23],       // যমুনা টিভি
-        sourcesData.world[0],        // Reuters
-        sourcesData.world[1]         // BBC News
+        sourcesData.bd_sports[0],
+        sourcesData.bd_sports[1],
+        sourcesData.bd_sports[2],
+        sourcesData.bd_sports[3],
+        sourcesData.bd_sports[4],
+        sourcesData.bd_sports[5],
+        sourcesData.bd_sports[6],
+        sourcesData.bd_sports[7],
+        sourcesData.intl_cricket[0],
+        sourcesData.intl_cricket[1],
+        sourcesData.intl_sports[0],
+        sourcesData.intl_sports[1],
+        sourcesData.intl_sports[9],
+        sourcesData.bd_bn[24],
+        sourcesData.bd_bn[0],
+        sourcesData.bd_bn[1],
+        sourcesData.bd_bn[2],
+        sourcesData.bd_bn[22],
+        sourcesData.bd_bn[23],
+        sourcesData.world[0],
+        sourcesData.world[1]
       ];
       await fetchMultipleSources(smartMixSources);
     }
@@ -1567,7 +1677,7 @@
               <p class="text-xs text-slate-400 mt-2 line-clamp-3 leading-relaxed">${item.description}</p>
             </div>
             <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-between items-center text-xs text-red-400 font-semibold">
-              <span>সম্পূর্ণ পোস্ট ও কার্ড দেখুন →</span>
+              <span>সম্পূর্ণ পোস্ট ও ভিডিও দেখুন →</span>
             </div>
           </div>
         `;
@@ -1591,6 +1701,18 @@
       const isPosted = postedNewsStore.some(n => n.id === item.id);
       const markBtn = document.getElementById('markPostBtn');
       markBtn.innerHTML = isPosted ? "↩️ তালিকা থেকে সরান" : "✅ মার্ক এজ পোস্ট";
+
+      stopFemaleVoice();
+      const previewVideo = document.getElementById('generatedVideoPreview');
+      const photoCanvas = document.getElementById('photoCanvas');
+      const dlLink = document.getElementById('downloadVideoLink');
+      if (previewVideo) {
+        previewVideo.pause();
+        previewVideo.classList.add('hidden');
+      }
+      if (photoCanvas) photoCanvas.classList.remove('hidden');
+      if (dlLink) dlLink.classList.add('hidden');
+      populateFemaleVoices();
 
       renderPhotoCardCanvas(item);
     }
@@ -1648,6 +1770,7 @@
         }
       }
       ctx.fillText(line, x, y);
+      return y;
     }
 
     function roundRect(ctx, x, y, width, height, radius) {
@@ -1674,7 +1797,568 @@
     }
 
     function closeModal() {
+      stopFemaleVoice();
+      const previewVideo = document.getElementById('generatedVideoPreview');
+      if (previewVideo) previewVideo.pause();
       document.getElementById('detailModal').classList.add('hidden');
+    }
+
+    // --- Authentic Bangladeshi TV News Anchor Voice Engine (সংবাদ পাঠিকা স্টাইল) ---
+    let latestGeneratedVideoUrl = null;
+    let isRecordingTypingVideo = false;
+    let currentVoiceAudio = null;
+    let voiceQueueActive = false;
+
+    // ইংরেজি শব্দ ও সংক্ষিপ্ত রূপগুলোকে বাংলা সংবাদ পাঠিকার স্বাভাবিক উচ্চারণে রূপান্তর
+    function normalizeBangladeshiNewsPronunciation(text) {
+      if (!text) return '';
+      const phoneticMap = [
+        [/\bBCB\b/gi, 'বি সি বি'],
+        [/\bBFF\b/gi, 'বাফুফে'],
+        [/\bBPL\b/gi, 'বি পি এল'],
+        [/\bICC\b/gi, 'আই সি সি'],
+        [/\bFIFA\b/gi, 'ফিফা'],
+        [/\bAI\b/gi, 'এ আই'],
+        [/\bBD\b/gi, 'বাংলাদেশ'],
+        [/\bUSA\b/gi, 'যুক্তরাষ্ট্র'],
+        [/\bUK\b/gi, 'যুক্তরাজ্য'],
+        [/\bUN\b/gi, 'জাতিসংঘ'],
+        [/\bRAB\b/gi, 'র‍্যাব'],
+        [/\bDMP\b/gi, 'ডি এম পি'],
+        [/\bBNP\b/gi, 'বি এন পি'],
+        [/\bvs\.?\b/gi, 'বনাম'],
+        [/\bLIVE\b/gi, 'সরাসরি'],
+        [/\bBREAKING\b/gi, 'ব্রেকিং'],
+        [/%/g, ' শতাংশ'],
+        [/&/g, ' এবং '],
+        [/—|–/g, ', ']
+      ];
+
+      let out = text;
+      for (const [pattern, replacement] of phoneticMap) {
+        out = out.replace(pattern, replacement);
+      }
+      return out;
+    }
+
+    // ঠিক একজন বাংলা সংবাদ পাঠিকার মতো সংবাদ স্ক্রিপ্ট সাজানো (শিরোনাম -> সংক্ষিপ্ত বিরতি -> মূল সংবাদ)
+    function prepareBangladeshiNewsScript(rawText, includeNewsIntro = false) {
+      if (!rawText) return '';
+      let s = rawText
+        .split('━━━━━━━━━━━━━━')[0]
+        .replace(/[#*_~`•▪►]/g, ' ')
+        .replace(/https?:\/\/\S+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      s = normalizeBangladeshiNewsPronunciation(s);
+
+      // দাঁড়ি, প্রশ্নবোধক, বিস্ময়চিহ্ন ও কমার পর সংবাদ পাঠিকার স্বাভাবিক শ্বাস নেওয়ার বিরতি
+      s = s
+        .replace(/([।!?]+)/g, '$1 ')
+        .replace(/[:;]/g, ', ')
+        .replace(/,\s*/g, ', ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
+      if (includeNewsIntro && s.length > 20) {
+        return `সংবাদ শিরোনাম। ${s}`;
+      }
+      return s;
+    }
+
+    // সংবাদ পাঠিকার বাক্য-বিন্যাস অনুযায়ী ছোট ছোট অর্থবহ বাক্যাংশে ভাগ করা
+    function splitScriptIntoAnchorPhrases(scriptText, maxLen = 155) {
+      if (!scriptText) return [];
+      const sentences = scriptText.split(/(?<=[।!?])\s+/).filter(Boolean);
+      const phrases = [];
+
+      for (const sent of sentences) {
+        const cleanSent = sent.trim();
+        if (!cleanSent) continue;
+
+        if (cleanSent.length <= maxLen) {
+          phrases.push(cleanSent);
+        } else {
+          // বড় বাক্যকে কমা (,) ধরে স্বাভাবিক নিঃশ্বাসের বিরতিতে ভাগ করা
+          const clauses = cleanSent.split(/(?<=,)\s+/).filter(Boolean);
+          let buf = '';
+          for (const cl of clauses) {
+            if ((buf + ' ' + cl).trim().length <= maxLen) {
+              buf = (buf + ' ' + cl).trim();
+            } else {
+              if (buf) phrases.push(buf);
+              if (cl.length > maxLen) {
+                const subParts = cl.match(new RegExp(`.{1,${maxLen}}(\\s|$)`, 'g')) || [cl];
+                subParts.forEach(p => { if (p.trim()) phrases.push(p.trim()); });
+                buf = '';
+              } else {
+                buf = cl;
+              }
+            }
+          }
+          if (buf) phrases.push(buf);
+        }
+      }
+      return phrases;
+    }
+
+    function scoreBangladeshiFemaleVoice(v) {
+      const name = (v.name || '').toLowerCase();
+      const lang = (v.lang || '').toLowerCase();
+      let score = 0;
+
+      // Microsoft Edge-এর 'Nabanita Online (Natural) - Bengali (Bangladesh)' ঠিক টিভি সংবাদ পাঠিকার মতো শোনায়
+      if (name.includes('nabanita')) score += 250;
+      if (lang === 'bn-bd') score += 160;
+      else if (lang.startsWith('bn')) score += 95;
+      else if (lang.startsWith('hi')) score += 10;
+
+      if (/natural|neural|online/i.test(name)) score += 70;
+      if (/female|woman|girl|nabanita|tanisha|priya|ananya|sraboni|mou|mim|sadia|nabila|google/i.test(name)) {
+        score += 45;
+      }
+      // পুরুষ কণ্ঠ (যেমন Pradeep, Bashkar) বা পুরনো রোবটিক ইঞ্জিন বাদ দেওয়া
+      if (/pradeep|bashkar|male|man|boy|rishi|prabhat|david|mark|espeak|festival/i.test(name)) {
+        score -= 120;
+      }
+
+      return score;
+    }
+
+    function populateFemaleVoices() {
+      if (!('speechSynthesis' in window)) return;
+      const voices = window.speechSynthesis.getVoices() || [];
+      const select = document.getElementById('femaleVoiceSelect');
+      if (!select) return;
+
+      const currentVal = select.value;
+      select.innerHTML = `
+        <option value="">🎙️ বাংলা সংবাদ পাঠিকা (অটো)</option>
+        <option value="__bd_cloud_anchor__">🇧🇩 বাংলা নিউজ অ্যাঙ্কর (স্টুডিও কণ্ঠ)</option>
+      `;
+
+      const ranked = voices
+        .map((v, idx) => ({ v, idx, score: scoreBangladeshiFemaleVoice(v) }))
+        .filter(item => item.v.lang.toLowerCase().includes('bn') && item.score > 0)
+        .sort((a, b) => b.score - a.score);
+
+      ranked.forEach(({ v, idx }) => {
+        const opt = document.createElement('option');
+        opt.value = String(idx);
+        const isNabanita = v.name.toLowerCase().includes('nabanita');
+        const badge = isNabanita ? '🇧🇩✨ ' : (v.lang.toLowerCase() === 'bn-bd' ? '🇧🇩 ' : '🎙️ ');
+        opt.textContent = `${badge}${v.name}`;
+        select.appendChild(opt);
+      });
+
+      if (currentVal) select.value = currentVal;
+    }
+
+    if ('speechSynthesis' in window) {
+      populateFemaleVoices();
+      window.speechSynthesis.onvoiceschanged = populateFemaleVoices;
+    }
+
+    function pickBestBangladeshiAnchorVoice() {
+      if (!('speechSynthesis' in window)) return { mode: 'cloud', voice: null };
+      const voices = window.speechSynthesis.getVoices() || [];
+      const select = document.getElementById('femaleVoiceSelect');
+
+      if (select && select.value === '__bd_cloud_anchor__') {
+        return { mode: 'cloud', voice: null };
+      }
+      if (select && select.value !== '') {
+        const chosen = voices[parseInt(select.value, 10)];
+        if (chosen) return { mode: 'native', voice: chosen };
+      }
+
+      const banglaVoices = voices
+        .map(v => ({ v, score: scoreBangladeshiFemaleVoice(v) }))
+        .filter(x => x.v.lang.toLowerCase().startsWith('bn') && x.score > 40)
+        .sort((a, b) => b.score - a.score);
+
+      // যদি ডিভাইসে Nabanita বা উচ্চমানের bn-BD নারী কণ্ঠ থাকে তবে সেটি, নতুবা স্বাভাবিক বাংলা স্টুডিও TTS
+      if (banglaVoices.length > 0) {
+        return { mode: 'native', voice: banglaVoices[0].v };
+      }
+      return { mode: 'cloud', voice: null };
+    }
+
+    function getSpeechTextForCurrentNews() {
+      const customText = document.getElementById('copyTextArea')?.value || '';
+      if (customText.trim()) {
+        return prepareBangladeshiNewsScript(customText, false);
+      }
+      return currentSelectedNews
+        ? prepareBangladeshiNewsScript(`${currentSelectedNews.title}। ${currentSelectedNews.description}`, false)
+        : '';
+    }
+
+    // স্বাভাবিক বাংলা সংবাদ পাঠিকার কণ্ঠে স্টুডিও অডিও প্লেব্যাক (একাধিক সার্ভার ফলব্যাকসহ)
+    function playStudioBanglaAnchorAudio(textPhrase, isHeadline, onDone) {
+      try {
+        if (currentVoiceAudio) {
+          currentVoiceAudio.pause();
+          currentVoiceAudio = null;
+        }
+        const endpoints = [
+          `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textPhrase)}&tl=bn&client=tw-ob`,
+          `https://translate.googleapis.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(textPhrase)}&tl=bn&client=gtx`
+        ];
+
+        let attempt = 0;
+        const tryPlayEndpoint = () => {
+          if (!voiceQueueActive) return;
+          if (attempt >= endpoints.length) {
+            if (onDone) onDone();
+            return;
+          }
+          const audio = new Audio(endpoints[attempt++]);
+          currentVoiceAudio = audio;
+          // সংবাদ পাঠিকার মতো স্পষ্ট ও পরিমিত গতি (শিরোনামে সামান্য গাম্ভীর্য, বিবরণে সাবলীল গতি)
+          audio.playbackRate = isHeadline ? 0.96 : 1.01;
+          audio.onended = () => {
+            if (currentVoiceAudio === audio) currentVoiceAudio = null;
+            if (onDone) onDone();
+          };
+          audio.onerror = () => {
+            if (currentVoiceAudio === audio) currentVoiceAudio = null;
+            tryPlayEndpoint();
+          };
+          audio.play().catch(() => {
+            tryPlayEndpoint();
+          });
+        };
+
+        tryPlayEndpoint();
+      } catch (e) {
+        if (onDone) onDone();
+      }
+    }
+
+    function speakBangladeshiScriptChunks(fullScript, onEndCallback = null, isHeadlineFirst = true) {
+      const cleaned = prepareBangladeshiNewsScript(fullScript, false);
+      if (!cleaned) {
+        if (onEndCallback) onEndCallback();
+        return;
+      }
+
+      stopFemaleVoice();
+      voiceQueueActive = true;
+
+      const phrases = splitScriptIntoAnchorPhrases(cleaned, 150);
+      const anchorPick = pickBestBangladeshiAnchorVoice();
+
+      let idx = 0;
+
+      const speakNextPhrase = () => {
+        if (!voiceQueueActive || idx >= phrases.length) {
+          voiceQueueActive = false;
+          if (onEndCallback) onEndCallback();
+          return;
+        }
+
+        const phraseText = phrases[idx];
+        const isHeadline = idx === 0 && isHeadlineFirst;
+        idx++;
+
+        // বাক্যের ধরন অনুযায়ী সংবাদ পাঠিকার স্বাভাবিক স্বরভঙ্গি (প্রশ্নবোধক, বিস্ময়, শিরোনাম ও বিবরণ)
+        const isQuestion = phraseText.endsWith('?');
+        const pauseAfterMs = isHeadline ? 420 : (phraseText.endsWith('।') ? 260 : 150);
+
+        if (anchorPick.mode === 'native' && anchorPick.voice && 'speechSynthesis' in window) {
+          const utter = new SpeechSynthesisUtterance(phraseText);
+          utter.voice = anchorPick.voice;
+          utter.lang = anchorPick.voice.lang || 'bn-BD';
+
+          // ঠিক বাংলা সংবাদ পাঠিকার কণ্ঠের মতো স্বাভাবিক পিচ ও ছন্দ
+          utter.pitch = isHeadline ? 1.05 : (isQuestion ? 1.08 : 1.01);
+          utter.rate = isHeadline ? 0.92 : 0.96;
+          utter.volume = 1.0;
+
+          utter.onend = () => {
+            if (!voiceQueueActive) return;
+            setTimeout(speakNextPhrase, pauseAfterMs);
+          };
+          utter.onerror = () => {
+            if (!voiceQueueActive) return;
+            playStudioBanglaAnchorAudio(phraseText, isHeadline, () => {
+              if (voiceQueueActive) setTimeout(speakNextPhrase, pauseAfterMs);
+            });
+          };
+
+          window.speechSynthesis.speak(utter);
+        } else {
+          playStudioBanglaAnchorAudio(phraseText, isHeadline, () => {
+            if (!voiceQueueActive) return;
+            setTimeout(speakNextPhrase, pauseAfterMs);
+          });
+        }
+      };
+
+      speakNextPhrase();
+    }
+
+    function speakNewsFemaleVoice(onEndCallback = null) {
+      const text = getSpeechTextForCurrentNews();
+      speakBangladeshiScriptChunks(text, onEndCallback, true);
+    }
+
+    function speakNewsFemaleVoiceForItem(item) {
+      if (!item) return;
+      const script = `${item.title}। ${(item.description || '').slice(0, 280)}`;
+      speakBangladeshiScriptChunks(script, null, true);
+    }
+
+    function stopFemaleVoice() {
+      voiceQueueActive = false;
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (currentVoiceAudio) {
+        try { currentVoiceAudio.pause(); } catch (e) {}
+        currentVoiceAudio = null;
+      }
+    }
+
+    function drawTypingCardFrame(ctx, item, bgImg, typedTitle, typedSummary, progressRatio) {
+      if (bgImg) {
+        const scale = 1.0 + (progressRatio * 0.04);
+        const w = 1080 * scale;
+        const h = 1080 * scale;
+        const offsetX = (1080 - w) / 2;
+        const offsetY = (1080 - h) / 2;
+        ctx.drawImage(bgImg, offsetX, offsetY, w, h);
+      } else {
+        const fallbackGrad = ctx.createLinearGradient(0, 0, 1080, 1080);
+        fallbackGrad.addColorStop(0, "#1e293b");
+        fallbackGrad.addColorStop(1, "#090d16");
+        ctx.fillStyle = fallbackGrad;
+        ctx.fillRect(0, 0, 1080, 1080);
+      }
+
+      const grad = ctx.createLinearGradient(0, 180, 0, 1080);
+      grad.addColorStop(0, "rgba(11, 17, 32, 0.25)");
+      grad.addColorStop(0.42, "rgba(11, 17, 32, 0.88)");
+      grad.addColorStop(1, "rgba(11, 17, 32, 0.98)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 1080, 1080);
+
+      ctx.fillStyle = item.color || "#dc2626";
+      roundRect(ctx, 60, 58, 250, 56, 12);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 25px 'Hind Siliguri', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(item.badge || "ব্রেকিং নিউজ", 185, 95);
+
+      ctx.textAlign = "right";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+      ctx.font = "bold 30px 'Hind Siliguri', sans-serif";
+      ctx.fillText(pageName, 1020, 96);
+
+      const cursor = Math.floor(Date.now() / 350) % 2 === 0 ? "▌" : "";
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 50px 'Hind Siliguri', sans-serif";
+      const nextYAfterTitle = wrapText(ctx, `${typedTitle}${typedSummary.length === 0 ? cursor : ''}`, 60, 440, 960, 66);
+
+      if (typedSummary.length > 0) {
+        ctx.fillStyle = "#e2e8f0";
+        ctx.font = "600 32px 'Hind Siliguri', sans-serif";
+        wrapText(ctx, `${typedSummary}${cursor}`, 60, Math.max(nextYAfterTitle + 28, 630), 960, 46);
+      }
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
+      ctx.fillRect(60, 945, 960, 8);
+      ctx.fillStyle = "#ec4899";
+      ctx.fillRect(60, 945, Math.min(960, Math.max(0, 960 * progressRatio)), 8);
+
+      // নিচে বাম পাশে পরিচ্ছন্ন রাখা হয়েছে (কোনো AI NEWS VIDEO • LIVE TYPING লেখা নেই)
+
+      ctx.textAlign = "right";
+      ctx.font = "25px 'Hind Siliguri', sans-serif";
+      ctx.fillStyle = "#cbd5e1";
+      ctx.fillText(getTodayFormattedDate(), 1020, 1015);
+    }
+
+    async function generateTypingVideoWithVoice(targetItem = null, updateModalPreview = true) {
+      const activeItem = targetItem || currentSelectedNews;
+      if (!activeItem || isRecordingTypingVideo) return null;
+      if (typeof MediaRecorder === 'undefined') {
+        alert("আপনার ব্রাউজার MediaRecorder সমর্থন করছে না। Chrome বা Edge ব্যবহার করুন।");
+        return null;
+      }
+
+      isRecordingTypingVideo = true;
+      const btn = updateModalPreview ? document.getElementById('generateVideoBtn') : null;
+      const statusEl = updateModalPreview ? document.getElementById('videoRenderStatus') : null;
+      const previewVideo = updateModalPreview ? document.getElementById('generatedVideoPreview') : null;
+      const photoCanvas = updateModalPreview ? document.getElementById('photoCanvas') : null;
+      const dlLink = updateModalPreview ? document.getElementById('downloadVideoLink') : null;
+
+      if (btn) { btn.disabled = true; btn.innerText = "⏳ ভিডিও তৈরি হচ্ছে..."; }
+      if (statusEl) statusEl.classList.remove('hidden');
+      if (previewVideo) previewVideo.classList.add('hidden');
+      if (photoCanvas) photoCanvas.classList.remove('hidden');
+      if (dlLink) dlLink.classList.add('hidden');
+
+      try {
+        const recordCanvas = document.createElement('canvas');
+        recordCanvas.width = 720;
+        recordCanvas.height = 720;
+        const rCtx = recordCanvas.getContext('2d');
+        const pCtx = photoCanvas ? photoCanvas.getContext('2d') : null;
+
+        const bgImg = await loadCorsSafeImage(activeItem.image, 6000);
+
+        rCtx.save();
+        rCtx.scale(720 / 1080, 720 / 1080);
+        drawTypingCardFrame(rCtx, activeItem, bgImg, (activeItem.title || "").slice(0, 1), "", 0.01);
+        rCtx.restore();
+
+        const stream = recordCanvas.captureStream(25);
+
+        let audioCtx = null;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            audioCtx = new AudioCtx();
+            const dest = audioCtx.createMediaStreamDestination();
+            // সংবাদ পাঠের ব্যাকগ্রাউন্ড নিউজ-বুলেটিন অডিও বেড + কণ্ঠস্বর সিন্থেসিস
+            const masterGain = audioCtx.createGain();
+            masterGain.gain.value = 0.18;
+            masterGain.connect(dest);
+
+            // мягкий নিউজ বুলেটিন অ্যাম্বিয়েন্ট টোন (যাতে ভিডিও মিউট না থাকে এবং প্রফেশনাল নিউজ ফিল আসে)
+            const padOsc = audioCtx.createOscillator();
+            const padGain = audioCtx.createGain();
+            padOsc.type = 'sine';
+            padOsc.frequency.value = 196;
+            padGain.gain.value = 0.06;
+            padOsc.connect(padGain);
+            padGain.connect(masterGain);
+            padOsc.start();
+
+            dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+          }
+        } catch (audioErr) {}
+
+        const candidateTypes = [
+          'video/mp4;codecs=avc1,mp4a.40.2',
+          'video/mp4',
+          'video/webm;codecs=vp8,opus',
+          'video/webm;codecs=vp9,opus',
+          'video/webm;codecs=vp8',
+          'video/webm'
+        ];
+        let mimeType = '';
+        if (typeof MediaRecorder.isTypeSupported === 'function') {
+          mimeType = candidateTypes.find(t => MediaRecorder.isTypeSupported(t)) || '';
+        }
+
+        const recorderOptions = mimeType ? { mimeType, videoBitsPerSecond: 1800000 } : { videoBitsPerSecond: 1800000 };
+        const recorder = new MediaRecorder(stream, recorderOptions);
+        const chunks = [];
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
+        };
+
+        const fullTitle = activeItem.title || "";
+        const fullSummary = (activeItem.description || "").slice(0, 220);
+        const totalChars = fullTitle.length + fullSummary.length;
+        const durationMs = Math.min(11000, Math.max(5500, totalChars * 45));
+        const startTime = performance.now();
+
+        speakNewsFemaleVoiceForItem(activeItem);
+
+        recorder.start(250);
+
+        await new Promise((resolve) => {
+          let finished = false;
+          const tick = () => {
+            if (finished) return;
+            const elapsed = performance.now() - startTime;
+            const progress = Math.min(1, elapsed / durationMs);
+
+            const typedTotal = Math.floor(totalChars * Math.min(1, progress * 1.15));
+            const typedTitle = fullTitle.slice(0, Math.min(fullTitle.length, typedTotal));
+            const remChars = Math.max(0, typedTotal - fullTitle.length);
+            const typedSummary = fullSummary.slice(0, Math.min(fullSummary.length, remChars));
+
+            rCtx.save();
+            rCtx.scale(720 / 1080, 720 / 1080);
+            drawTypingCardFrame(rCtx, activeItem, bgImg, typedTitle, typedSummary, progress);
+            rCtx.restore();
+
+            if (pCtx) {
+              pCtx.clearRect(0, 0, 1080, 1080);
+              pCtx.drawImage(recordCanvas, 0, 0, 1080, 1080);
+            }
+
+            if (statusEl) statusEl.innerText = `🎬 টাইপিং ভিডিও তৈরি হচ্ছে... ${Math.round(progress * 100)}%`;
+
+            if (progress >= 1) {
+              finished = true;
+              clearInterval(timerId);
+              resolve();
+            }
+          };
+          const timerId = setInterval(tick, 40);
+          tick();
+        });
+
+        try {
+          if (recorder.state === 'recording') {
+            recorder.requestData();
+          }
+        } catch (reqErr) {}
+
+        await new Promise((resolve) => {
+          recorder.onstop = resolve;
+          if (recorder.state !== 'inactive') {
+            recorder.stop();
+          } else {
+            resolve();
+          }
+        });
+
+        if (audioCtx) {
+          try { await audioCtx.close(); } catch (e) {}
+        }
+        stream.getTracks().forEach(t => t.stop());
+
+        const actualType = recorder.mimeType || mimeType || 'video/webm';
+        const finalBlob = new Blob(chunks, { type: actualType });
+        if (latestGeneratedVideoUrl) {
+          URL.revokeObjectURL(latestGeneratedVideoUrl);
+        }
+        latestGeneratedVideoUrl = URL.createObjectURL(finalBlob);
+
+        if (updateModalPreview && previewVideo && photoCanvas && dlLink) {
+          previewVideo.src = latestGeneratedVideoUrl;
+          photoCanvas.classList.add('hidden');
+          previewVideo.classList.remove('hidden');
+          previewVideo.play().catch(() => {});
+
+          dlLink.href = latestGeneratedVideoUrl;
+          dlLink.download = `${pageName}-News-Video-${Date.now()}.${(finalBlob.type || '').includes('mp4') ? 'mp4' : 'webm'}`;
+          dlLink.classList.remove('hidden');
+        }
+
+        if (statusEl) {
+          statusEl.innerText = "✅ টাইপিং ভিডিও ও মেয়ে কণ্ঠ প্রস্তুত!";
+          setTimeout(() => statusEl.classList.add('hidden'), 2500);
+        }
+
+        return finalBlob;
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = "🎬 টাইপিং ভিডিও বানান";
+        }
+        isRecordingTypingVideo = false;
+      }
     }
   </script>
 </body>
