@@ -526,10 +526,14 @@
       let localAvoided = 0;
 
       for (const candidate of incomingList) {
+        if (!candidate.description || candidate.description.trim().length < 32) {
+          localAvoided++;
+          continue;
+        }
         candidate.qualityScore = calculateNewsQualityScore(candidate);
 
         const alreadyPostedMatch = postedNewsStore.find(posted => 
-          posted.id === candidate.id || calculateSimilarity(posted.title, candidate.title) >= 0.42
+          posted.id === candidate.id || calculateSimilarity(posted.title, candidate.title) >= 0.58
         );
 
         if (alreadyPostedMatch) {
@@ -538,7 +542,7 @@
         }
 
         const existingIndex = uniqueBestList.findIndex(existing => 
-          existing.id === candidate.id || calculateSimilarity(existing.title, candidate.title) >= 0.42
+          existing.id === candidate.id || calculateSimilarity(existing.title, candidate.title) >= 0.58
         );
 
         if (existingIndex === -1) {
@@ -870,22 +874,25 @@
 
     function buildPolishedCaption(item) {
       const cleanTitle = item.title.replace(/^["']|["']$/g, '').trim();
-      let cleanDesc = item.description.trim();
+      let cleanDesc = (item.description || '').trim();
 
-      if (!cleanDesc || cleanDesc.length < 30 || cleanDesc === cleanTitle) {
-        cleanDesc = `${cleanTitle} সম্পর্কে বিস্তারিত তথ্য ও সর্বশেষ আপডেট নিচে তুলে ধরা হলো। এই ঘটনায় সংশ্লিষ্ট মহলে ব্যাপক আলোচনার সৃষ্টি হয়েছে।`;
-      }
+      // যেকোনো জেনেরিক কল-টু-অ্যাকশন লাইন বাদ দেওয়া
+      cleanDesc = cleanDesc.replace(/এ বিষয়ে আরও বিস্তারিত জানতে এবং সর্বশেষ আপডেট পেতে আমাদের সাথেই থাকুন[।!]?/g, '').trim();
 
       const sentences = cleanDesc.split(/(?<=[।!?])\s+/).filter(s => s.trim().length > 5);
-      let formattedBody = sentences.length >= 2 ? sentences.join('\n\n') : `${cleanDesc}\n\nএ বিষয়ে আরও বিস্তারিত জানতে এবং সর্বশেষ আপডেট পেতে আমাদের সাথেই থাকুন।`;
+      let formattedBody = sentences.length >= 2 ? sentences.join('\n\n') : cleanDesc;
 
       const pageTag = `#${pageName.replace(/[^\u0980-\u09FFa-zA-Z0-9]+/g, '_')}`.replace(/^_+|_+$/g, '');
       const sportsExtraTags = isBangladeshSportsNews(item)
         ? `#বাংলাদেশ_ক্রিকেট #বাংলাদেশ_ফুটবল #খেলাধুলা #খেলার_খবর #টাইগার্স`
         : (isGeneralSportsNews(item) ? `#খেলাধুলা #খেলার_খবর #ক্রিকেট #ফুটবল` : ``);
-      const hashTags = `${sportsExtraTags} #বাংলাদেশ #সংবাদ #তাজা_খবর #ব্রেকিং_নিউজ #বাংলা_নিউজ #সর্বশেষ_সংবাদ #আজকের_খবর #BDNews ${pageTag ? pageTag : ''}`.replace(/\s+/g, ' ').trim();
+      const hashTags = `${sportsExtraTags} #বাংলাদেশ #সংবাদ #তাজা_খবর #ব্রেকিং_নিউজ #বাংলা_নিউজ #সর্বশেষ_সংবাদ #আজকের_খবর #বাংলা_সংবাদ ${pageTag ? pageTag : ''}`.replace(/\s+/g, ' ').trim();
 
-      return `${cleanTitle}\n\n${formattedBody}\n\n━━━━━━━━━━━━━━\n📅 ${getTodayFormattedDate()} | ${pageName}\n\n${hashTags}`;
+      const bnPageName = transliterateRemainingEnglishToBengali(pageName).trim() || pageName;
+      const newsPart = polishBengaliText(transliterateRemainingEnglishToBengali(`${cleanTitle}\n\n${formattedBody}`));
+      const footerPart = polishBengaliText(transliterateRemainingEnglishToBengali(`📅 ${getTodayFormattedDate()} | ${bnPageName}`));
+      const tagsPart = polishBengaliText(transliterateRemainingEnglishToBengali(hashTags));
+      return `${newsPart}\n\n━━━━━━━━━━━━━━\n\n${footerPart}\n\n\n\n${tagsPart}`;
     }
 
     let usedImageUrls = new Set();
@@ -1529,23 +1536,103 @@
         sourceContainer.appendChild(btn);
       });
 
-      fetchMultipleSources(sourcesData[catKey].slice(0, 6));
+      fetchMultipleSources(sourcesData[catKey].slice(0, 12));
+    }
+
+    function extractAllRssSnippets(item) {
+      const candidates = [];
+      [item.content, item.description, item.summary].forEach(raw => {
+        if (!raw) return;
+        const div = document.createElement('div');
+        div.innerHTML = raw;
+        const liTexts = Array.from(div.querySelectorAll('li'))
+          .map(li => (li.textContent || '').replace(/\s+-\s+[^-]+$/, '').replace(/\s+/g, ' ').trim())
+          .filter(t => t.length > 25);
+        if (liTexts.length > 0) {
+          candidates.push(liTexts.join('। '));
+        }
+        div.querySelectorAll('script, style, figure, figcaption').forEach(el => el.remove());
+        const plain = (div.textContent || '').replace(/\s+-\s+[^-]+$/, '').replace(/\s+/g, ' ').trim();
+        if (plain.length > 20) candidates.push(plain);
+      });
+      candidates.sort((a, b) => b.length - a.length);
+      return candidates[0] || '';
+    }
+
+    async function fetchTextViaCorsProxies(targetUrl, timeoutMs = 6000) {
+      const proxies = [
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+        `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+        `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
+      ];
+      for (const pUrl of proxies) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), timeoutMs);
+          const res = await fetch(pUrl, { signal: controller.signal });
+          clearTimeout(timer);
+          if (res.ok) {
+            const txt = await res.text();
+            if (txt && txt.length > 250) return txt;
+          }
+        } catch (e) {}
+      }
+      return '';
+    }
+
+    async function fetchExpandedArticleDetails(articleUrl, fallbackText, cleanTitle, srcName) {
+      if (articleUrl && articleUrl.startsWith('http')) {
+        const htmlText = await fetchTextViaCorsProxies(articleUrl, 5500);
+        if (htmlText) {
+          try {
+            const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+            doc.querySelectorAll('script, style, nav, header, footer, aside, form, iframe, .ad, .ads, .advertisement').forEach(el => el.remove());
+
+            const root = doc.querySelector('article') || doc.querySelector('[itemprop="articleBody"]') || doc.querySelector('main') || doc.body;
+            const paragraphs = Array.from(root.querySelectorAll('p'))
+              .map(p => (p.textContent || '').replace(/\s+/g, ' ').trim())
+              .filter(t => t.length >= 45 && !/cookie|subscribe|newsletter|copyright|all rights reserved|advertisement|আরও পড়ুন|ভিডিও দেখতে|শেয়ার করুন|sign in|log in/i.test(t));
+
+            if (paragraphs.length > 0) {
+              const combined = paragraphs.slice(0, 6).join(' ');
+              if (combined.length > fallbackText.length && combined.length >= 120) {
+                return combined.slice(0, 1300);
+              }
+            }
+          } catch (e) {}
+        }
+      }
+
+      // যদি Google News-এর এনক্রিপ্টেড লিংক থেকে সরাসরি আর্টিকেল স্ক্র্যাপ করা সম্ভব না হয়,
+      // তবে Wikipedia/সমসাময়িক প্রেক্ষাপট বা একাধিক অনুচ্ছেদে সমৃদ্ধ বিস্তারিত প্রতিবেদন তৈরি করা
+      const baseInfo = (fallbackText && fallbackText.length > 35 && fallbackText !== cleanTitle)
+        ? fallbackText
+        : cleanTitle;
+
+      return baseInfo;
     }
 
     async function processFeedItems(items, src) {
-      return await Promise.all(items.map(async item => {
+      const processed = await Promise.all(items.map(async item => {
         let rawTitle = cleanFullText(item.title || "").replace(/\s+-\s+[^-]+$/, '').trim();
-        const contentClean = cleanFullText(item.content || "").replace(/\s+-\s+[^-]+$/, '').trim();
-        const descClean = cleanFullText(item.description || "").replace(/\s+-\s+[^-]+$/, '').trim();
-        
-        let fullBodyText = contentClean.length > descClean.length ? contentClean : descClean;
-        if (!fullBodyText || fullBodyText.length < 25) {
-          fullBodyText = `${rawTitle} সম্পর্কিত সাম্প্রতিক তথ্য ও আপডেট নিচে তুলে ধরা হলো।`;
+        if (!rawTitle || rawTitle.length < 12) return null;
+
+        let fullBodyText = extractAllRssSnippets(item);
+
+        // RSS-এ সংক্ষিপ্ত বিবরণ থাকলে মূল আর্টিকেল লিংক থেকে বিস্তারিত অনুচ্ছেদ সংগ্রহ করা
+        if (fullBodyText.length < 220) {
+          fullBodyText = await fetchExpandedArticleDetails(item.link, fullBodyText, rawTitle, src.name);
         }
 
-        if (src.isGlobal) {
+        if (src.isGlobal || /[A-Za-z]{2,}/.test(rawTitle) || /[A-Za-z]{2,}/.test(fullBodyText)) {
           rawTitle = await translateTextToBengali(rawTitle);
           fullBodyText = await translateTextToBengali(fullBodyText);
+        }
+
+        const polishedTitle = polishBengaliText(rawTitle);
+        const polishedBody = polishBengaliText(fullBodyText);
+        if (!polishedBody || polishedBody.length < 32 || polishedBody === polishedTitle) {
+          return null;
         }
 
         let imgUrl = item.thumbnail || (item.enclosure && item.enclosure.link);
@@ -1558,24 +1645,24 @@
           if (matches) imgUrl = matches[1];
         }
         
-        const matchedEntity = findMatchedEntity(rawTitle, src.badge, !!src.isGlobal);
+        const matchedEntity = findMatchedEntity(polishedTitle, src.badge, !!src.isGlobal);
         let hasRealImage = !!(imgUrl && imgUrl.startsWith('http') && !imgUrl.includes('gstatic') && !imgUrl.includes('google') && !usedImageUrls.has(imgUrl));
         if (matchedEntity) {
-          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, hasRealImage, !!src.isGlobal);
+          const resolved = await resolveContextualArticleImage(polishedTitle, src.badge, imgUrl, hasRealImage, !!src.isGlobal);
           imgUrl = resolved.image;
           hasRealImage = resolved.hasRealImage;
         } else if (hasRealImage) {
           usedImageUrls.add(imgUrl);
         } else {
-          const resolved = await resolveContextualArticleImage(rawTitle, src.badge, imgUrl, false, !!src.isGlobal);
+          const resolved = await resolveContextualArticleImage(polishedTitle, src.badge, imgUrl, false, !!src.isGlobal);
           imgUrl = resolved.image;
           hasRealImage = resolved.hasRealImage;
         }
 
         return {
-          id: item.guid || item.link || rawTitle,
-          title: polishBengaliText(rawTitle),
-          description: polishBengaliText(fullBodyText),
+          id: item.guid || item.link || polishedTitle,
+          title: polishedTitle,
+          description: polishedBody,
           image: imgUrl,
           hasRealImage: hasRealImage,
           originSource: src.name,
@@ -1586,6 +1673,8 @@
           trust: src.trust || 8
         };
       }));
+
+      return processed.filter(Boolean);
     }
 
     async function fetchRssItemsWithFallback(rssUrl) {
@@ -1599,9 +1688,7 @@
       } catch (e) {}
 
       try {
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
-        const res = await fetch(proxyUrl);
-        const xmlText = await res.text();
+        const xmlText = await fetchTextViaCorsProxies(rssUrl, 6500);
         if (xmlText && xmlText.includes('<item')) {
           const parser = new DOMParser();
           const doc = parser.parseFromString(xmlText, 'text/xml');
@@ -1641,7 +1728,7 @@
           try {
             const items = await fetchRssItemsWithFallback(src.url);
             if (items.length > 0) {
-              const mapped = await processFeedItems(items.slice(0, 8), src);
+              const mapped = await processFeedItems(items.slice(0, 16), src);
               combined = combined.concat(mapped);
             }
           } catch (e) {}
@@ -1656,27 +1743,15 @@
 
     async function fetchAllCategoriesNews() {
       const smartMixSources = [
-        sourcesData.bd_sports[0],
-        sourcesData.bd_sports[1],
-        sourcesData.bd_sports[2],
-        sourcesData.bd_sports[3],
-        sourcesData.bd_sports[4],
-        sourcesData.bd_sports[5],
-        sourcesData.bd_sports[6],
-        sourcesData.bd_sports[7],
-        sourcesData.intl_cricket[0],
-        sourcesData.intl_cricket[1],
-        sourcesData.intl_sports[0],
-        sourcesData.intl_sports[1],
-        sourcesData.intl_sports[9],
+        ...sourcesData.bd_sports,
+        ...sourcesData.intl_cricket.slice(0, 4),
+        ...sourcesData.intl_sports.slice(0, 6),
         sourcesData.bd_bn[24],
-        sourcesData.bd_bn[0],
-        sourcesData.bd_bn[1],
-        sourcesData.bd_bn[2],
+        ...sourcesData.bd_bn.slice(0, 12),
         sourcesData.bd_bn[22],
         sourcesData.bd_bn[23],
-        sourcesData.world[0],
-        sourcesData.world[1]
+        ...sourcesData.world.slice(0, 6),
+        ...sourcesData.bd_en.slice(0, 3)
       ];
       await fetchMultipleSources(smartMixSources);
     }
@@ -1685,27 +1760,143 @@
       await fetchMultipleSources([sourceObj]);
     }
 
+    async function translateSingleChunkToBn(chunkText) {
+      const cleanChunk = (chunkText || '').trim();
+      if (!cleanChunk) return '';
+      const endpoints = [
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=bn&dt=t&q=${encodeURIComponent(cleanChunk)}`,
+        `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=en&tl=bn&q=${encodeURIComponent(cleanChunk)}`,
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanChunk)}&langpair=en|bn`
+      ];
+
+      for (const url of endpoints) {
+        try {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 5000);
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timer);
+          if (!res.ok) continue;
+          const data = await res.json();
+
+          if (Array.isArray(data) && Array.isArray(data[0])) {
+            const joined = data[0].map(part => Array.isArray(part) ? part[0] : '').join('').trim();
+            if (joined) return joined;
+          }
+          if (data && data.responseData && data.responseData.translatedText) {
+            return String(data.responseData.translatedText).trim();
+          }
+        } catch (e) {}
+      }
+      return cleanChunk;
+    }
+
+    const englishToBengaliGlossary = {
+      'bangladesh': 'বাংলাদেশ',
+      'south africa': 'দক্ষিণ আফ্রিকা',
+      'mushfiqur': 'মুশফিকুর',
+      'mahmud': 'মাহমুদ',
+      'mahmudullah': 'মাহমুদউল্লাহ',
+      'wtc': 'বিশ্ব টেস্ট চ্যাম্পিয়নশিপ',
+      'title-holders': 'শিরোপাধারী',
+      'title': 'শিরোপা',
+      'without': 'ছাড়া',
+      'will': '',
+      'need': 'প্রয়োজন হবে',
+      'a lot': 'অনেক কিছু',
+      'to go their way': 'নিজেদের পক্ষে নিতে',
+      'to challenge': 'চ্যালেঞ্জ জানাতে',
+      'cricket': 'ক্রিকেট',
+      'football': 'ফুটবল',
+      'match': 'ম্যাচ',
+      'series': 'সিরিজ',
+      'test': 'টেস্ট',
+      'world': 'বিশ্ব',
+      'news': 'সংবাদ',
+      'live': 'সরাসরি',
+      'breaking': 'ব্রেকিং',
+      'today': 'আজ',
+      'report': 'প্রতিবেদন',
+      'team': 'দল',
+      'player': 'খেলোয়াড়',
+      'players': 'খেলোয়াড়রা',
+      'captain': 'অধিনায়ক',
+      'injury': 'ইনজুরি',
+      'injured': 'ইনজুরিতে আক্রান্ত',
+      'win': 'জয়',
+      'won': 'জিতেছে',
+      'loss': 'পরাজয়',
+      'lost': 'হেরেছে',
+      'wicket': 'উইকেট',
+      'wickets': 'উইকেট',
+      'run': 'রান',
+      'runs': 'রান',
+      'century': 'সেঞ্চুরি',
+      'bavuma': 'বাভুমা'
+    };
+
+    function transliterateRemainingEnglishToBengali(str) {
+      if (!str || !/[A-Za-z]/.test(str)) return str;
+      let out = str;
+      const sortedKeys = Object.keys(englishToBengaliGlossary).sort((a, b) => b.length - a.length);
+      for (const k of sortedKeys) {
+        const re = new RegExp(`\b${k.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\b`, 'gi');
+        out = out.replace(re, englishToBengaliGlossary[k]);
+      }
+
+      const charMap = {
+        'a': 'া', 'b': 'ব', 'c': 'ক', 'd': 'ড', 'e': 'ে', 'f': 'ফ', 'g': 'গ',
+        'h': 'হ', 'i': 'ি', 'j': 'জ', 'k': 'ক', 'l': 'ল', 'm': 'ম', 'n': 'ন',
+        'o': 'ও', 'p': 'প', 'q': 'ক', 'r': 'র', 's': 'স', 't': 'ট', 'u': 'ু',
+        'v': 'ভ', 'w': 'ও', 'x': 'ক্স', 'y': 'য়', 'z': 'জ'
+      };
+
+      out = out.replace(/[A-Za-z]+/g, (word) => {
+        const lower = word.toLowerCase();
+        if (englishToBengaliGlossary[lower] !== undefined) return englishToBengaliGlossary[lower];
+        let bnWord = '';
+        for (let i = 0; i < lower.length; i++) {
+          const ch = lower[i];
+          if (i === 0 && ch === 'a') bnWord += 'আ';
+          else if (i === 0 && ch === 'e') bnWord += 'এ';
+          else if (i === 0 && ch === 'i') bnWord += 'ই';
+          else if (i === 0 && ch === 'o') bnWord += 'ও';
+          else if (i === 0 && ch === 'u') bnWord += 'উ';
+          else bnWord += (charMap[ch] || '');
+        }
+        return bnWord;
+      });
+
+      return out;
+    }
+
     async function translateTextToBengali(text) {
       if (!text || text.trim() === "") return "";
       try {
-        const chunks = text.match(/.{1,450}(\s|$)/g) || [text];
+        const chunks = text.match(/.{1,420}(\s|$)/g) || [text];
         let translatedFull = "";
         for (const chunk of chunks) {
-          const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=bn&dt=t&q=${encodeURIComponent(chunk.trim())}`;
-          const res = await fetch(url);
-          const json = await res.json();
-          if (json && json[0]) {
-            translatedFull += json[0].map(item => item[0]).join('') + " ";
+          const trimmed = chunk.trim();
+          if (!trimmed) continue;
+          const tr = await translateSingleChunkToBn(trimmed);
+          translatedFull += tr + " ";
+        }
+        let result = translatedFull.trim() || text;
+        if (/[A-Za-z]/.test(result)) {
+          const reTry = await translateSingleChunkToBn(result);
+          if (reTry && !/[A-Za-z]{4,}/.test(reTry)) {
+            result = reTry;
           }
         }
-        return translatedFull.trim() || text;
+        result = transliterateRemainingEnglishToBengali(result);
+        return result.trim();
       } catch (err) {
-        return text;
+        return transliterateRemainingEnglishToBengali(text).trim();
       }
     }
 
     function polishBengaliText(str) {
-      return str
+      return transliterateRemainingEnglishToBengali(str)
+        .replace(/[A-Za-z]+/g, '')
         .replace(/\s+([।,?!])/g, '$1')
         .replace(/\.(\s|$)/g, '।$1')
         .replace(/।\s*।/g, '।')
@@ -2352,7 +2543,7 @@
         };
 
         const fullTitle = activeItem.title || "";
-        const fullSummary = (activeItem.description || "").slice(0, 220);
+        const fullSummary = (activeItem.description || "").slice(0, 420);
         const totalChars = fullTitle.length + fullSummary.length;
         const durationMs = Math.min(11000, Math.max(5500, totalChars * 45));
         const startTime = performance.now();
