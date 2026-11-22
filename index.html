@@ -48,11 +48,10 @@
       </div>
 
       <div class="flex flex-wrap items-center justify-center gap-3">
-        <!-- বাংলাদেশ পিক টাইম মোড -->
-        <label class="text-xs text-slate-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-emerald-500/30 cursor-pointer" title="বাংলাদেশ সময় সকাল ৮টা - রাত ১১টা (বেস্ট পিক টাইম)">
-          <input type="checkbox" id="bdPeakTimeOnly" checked class="accent-emerald-500 cursor-pointer">
-          <span class="font-semibold text-emerald-400">🇧🇩 ডে পিক-টাইম মোড</span>
-        </label>
+        <!-- ২৪/৭ নিরবচ্ছিন্ন অটো-পোস্ট ব্যাজ -->
+        <div class="text-xs text-emerald-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-emerald-500/30" title="রাত-দিন ২৪ ঘণ্টা বিরতিহীনভাবে পোস্ট চলবে যতক্ষণ অ্যাপ ও অটো-পোস্ট চালু থাকবে">
+          <span class="font-semibold text-emerald-400">🔄 ২৪/৭ বিরতিহীন পোস্ট চালু</span>
+        </div>
 
         <!-- অটো-পোস্ট ও সরাসরি পোস্টে টাইপিং ভিডিও মোড -->
         <label class="text-xs text-slate-300 flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-purple-500/40 cursor-pointer" title="চালু থাকলে ছবির বদলে টাইপিং অ্যানিমেশন ভিডিও তৈরি করে ফেসবুক পেজে আপলোড করবে">
@@ -493,32 +492,7 @@
     }
 
     function getBangladeshPeakTimeInfo() {
-      const now = new Date();
-      const bdTimeStr = now.toLocaleString('en-US', { timeZone: 'Asia/Dhaka' });
-      const bdDate = new Date(bdTimeStr);
-      const hour = bdDate.getHours();
-      const minute = bdDate.getMinutes();
-
-      const isDaytimeActive = (hour > 7 || (hour === 7 && minute >= 30)) && (hour < 23 || (hour === 23 && minute <= 30));
-
-      let slotName = "সাধারণ দিনের সময়";
-      let isSuperPeak = false;
-
-      if ((hour === 8 && minute >= 30) || (hour >= 9 && hour <= 10) || (hour === 11 && minute <= 30)) {
-        isSuperPeak = true;
-        slotName = "সকালের পিক-টাইম (০৮:৩০ - ১১:৩০)";
-      } else if ((hour >= 13 && hour <= 14) || (hour === 15 && minute <= 30)) {
-        isSuperPeak = true;
-        slotName = "দুপুরের পিক-টাইম (০১:০০ - ০৩:৩০)";
-      } else if (hour >= 17 && hour < 19) {
-        isSuperPeak = true;
-        slotName = "বিকেল/সন্ধ্যার পিক-টাইম (০৫:০০ - ০৭:০০)";
-      } else if ((hour >= 20 && hour <= 22) || (hour === 23 && minute <= 15)) {
-        isSuperPeak = true;
-        slotName = "রাতের প্রাইম পিক-টাইম (০৮:০০ - ১১:১৫)";
-      }
-
-      return { isDaytimeActive, isSuperPeak, slotName, hour, minute };
+      return { isDaytimeActive: true, isSuperPeak: true, slotName: "২৪/৭ বিরতিহীন মোড", hour: 0, minute: 0 };
     }
 
     function deduplicateAndSelectBestNews(incomingList) {
@@ -716,10 +690,10 @@
         await requestScreenWakeLockIfPossible();
         await onBackgroundHeartbeatTick();
       } else {
-        // ট্যাব ব্যাকগ্রাউন্ডে গেলে সাথে সাথে পরবর্তী চেক নিশ্চিত করা
+        logActivity("🌙 ট্যাব ব্যাকগ্রাউন্ডে আছে — ব্যাকগ্রাউন্ড টাইমার ও নির্বিঘ্ন পোস্ট মোড সক্রিয়।");
         setTimeout(() => {
           if (autoPostActive) onBackgroundHeartbeatTick();
-        }, 500);
+        }, 400);
       }
     });
 
@@ -743,45 +717,24 @@
       }, 1000);
     }
 
-    let skippedOffPeakIds = new Set();
-
     async function runAutoPostCycle() {
       if (!autoPostActive || !fbConfig) return;
-
-      const peakOnly = document.getElementById('bdPeakTimeOnly')?.checked;
-      const peakInfo = getBangladeshPeakTimeInfo();
 
       allFetchedNews = deduplicateAndSelectBestNews(allFetchedNews);
       renderNewsGrid();
 
       if (!allFetchedNews || allFetchedNews.length === 0) {
-        skippedOffPeakIds.clear();
         logActivity("নতুন খেলার, রাজনীতির ও তাজা খবর সংগ্রহ করা হচ্ছে...");
         await fetchAllCategoriesNews();
         return;
       }
 
-      let nextNews = allFetchedNews[0];
-      let modeLabel = peakInfo.isSuperPeak ? `🔥 ${peakInfo.slotName}` : `🕒 ${peakInfo.slotName}`;
-
-      if (peakOnly && !peakInfo.isDaytimeActive) {
-        const altCandidate = allFetchedNews.find(n => !skippedOffPeakIds.has(n.id));
-        if (altCandidate) {
-          nextNews = altCandidate;
-          skippedOffPeakIds.add(altCandidate.id);
-          modeLabel = "🌙 অফ-পিক টাইমেও অন্যান্য খবর সক্রিয়";
-        } else {
-          skippedOffPeakIds.clear();
-          nextNews = allFetchedNews[0];
-          modeLabel = "🔄 অফ-পিক রানিং কিউ";
-        }
-      }
-
+      const nextNews = allFetchedNews[0];
       const priorityTag = isBangladeshSportsNews(nextNews)
         ? "🇧🇩🏏⚽ বাংলাদেশ স্পোর্টস"
         : (isBangladeshPoliticsNews(nextNews) ? "🚨 রাজনীতি ও পরিস্থিতি" : "📰 অন্যান্য তাজা খবর");
 
-      logActivity(`🚀 [${modeLabel} | ${priorityTag}] পোস্ট হচ্ছে: "${nextNews.title.substring(0, 40)}..."`);
+      logActivity(`🚀 [২৪/৭ বিরতিহীন মোড | ${priorityTag}] পোস্ট হচ্ছে: "${nextNews.title.substring(0, 40)}..."`);
       const postedOk = await postNewsItemToFacebook(nextNews, true);
 
       if (!postedOk && allFetchedNews.length > 1) {
@@ -1432,7 +1385,8 @@
       };
 
       try {
-        if (wantTypingVideo && typeof MediaRecorder !== 'undefined') {
+        const isTabHidden = (typeof document !== 'undefined' && document.visibilityState === 'hidden');
+        if (wantTypingVideo && !isTabHidden && typeof MediaRecorder !== 'undefined') {
           logActivity(`🎬 টাইপিং ভিডিও তৈরি ও আপলোড হচ্ছে: "${item.title.substring(0, 32)}..."`);
           const videoBlob = await generateTypingVideoWithVoice(item, !isAuto && currentSelectedNews && currentSelectedNews.id === item.id);
           if (!videoBlob || videoBlob.size === 0) {
@@ -1456,7 +1410,8 @@
         allFetchedNews = allFetchedNews.filter(n => n.id !== item.id);
 
         renderNewsGrid();
-        logActivity(`✅ সফলভাবে ফেসবুকে ${wantTypingVideo ? 'টাইপিং ভিডিও' : 'ফটো কার্ড'} পোস্ট হয়েছে: "${item.title.substring(0, 32)}..."`);
+        const postedKind = (wantTypingVideo && document.visibilityState !== 'hidden') ? 'টাইপিং ভিডিও' : 'ফটো কার্ড';
+        logActivity(`✅ সফলভাবে ফেসবুকে ${postedKind} পোস্ট হয়েছে: "${item.title.substring(0, 32)}..."`);
         return true;
       } catch (err) {
         if (wantTypingVideo) {
