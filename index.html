@@ -398,16 +398,82 @@
     let avoidedDuplicatesCount = 0;
 
     let fbConfig = JSON.parse(localStorage.getItem('fb_page_config') || 'null');
-    let autoPostActive = false;
+    let autoPostActive = localStorage.getItem('auto_post_persisted_active') === '1';
+    let savedIntervalSec = parseInt(localStorage.getItem('auto_post_persisted_interval') || '60', 10);
+    let savedNextPostMs = parseInt(localStorage.getItem('auto_post_persisted_next_ms') || '0', 10);
     let countdownInterval = null;
     let secondsRemaining = 0;
     let isPostingInProgress = false;
 
+    function persistAutoPostState() {
+      try {
+        localStorage.setItem('auto_post_persisted_active', autoPostActive ? '1' : '0');
+        const sel = document.getElementById('autoIntervalSelect');
+        if (sel) localStorage.setItem('auto_post_persisted_interval', String(sel.value));
+        if (autoPostActive && nextScheduledPostTimeMs > 0) {
+          localStorage.setItem('auto_post_persisted_next_ms', String(nextScheduledPostTimeMs));
+        } else if (!autoPostActive) {
+          localStorage.removeItem('auto_post_persisted_next_ms');
+        }
+      } catch (e) {}
+    }
+
+    function applyAutoPostActiveUI(isResumedAfterReload = false) {
+      const btn = document.getElementById('autoPostToggleBtn');
+      const badge = document.getElementById('countdownBadge');
+      const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10) || 60;
+
+      if (autoPostActive) {
+        btn.innerText = "⚡ অটো-পোস্ট: ON";
+        btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg transition";
+        badge.classList.remove('hidden');
+
+        if (savedNextPostMs > 0 && savedNextPostMs <= Date.now()) {
+          nextScheduledPostTimeMs = Date.now() + 1500;
+        } else if (savedNextPostMs > Date.now()) {
+          nextScheduledPostTimeMs = savedNextPostMs;
+        } else {
+          nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
+        }
+
+        secondsRemaining = Math.max(0, Math.ceil((nextScheduledPostTimeMs - Date.now()) / 1000));
+        document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
+        persistAutoPostState();
+
+        if (isResumedAfterReload) {
+          logActivity("🔄 লক/রিলোডের পর অটো-পোস্ট স্বয়ংক্রিয়ভাবে পুনরায় চালু হয়েছে (আপনি নিজে অফ না করা পর্যন্ত চলবে)।");
+        } else {
+          logActivity("অটো-পোস্ট চালু হয়েছে (ব্যাকগ্রাউন্ড ওয়ার্কার ও পারসিস্টেন্ট মোড সক্রিয়)।");
+        }
+        startCountdownLoop();
+      } else {
+        btn.innerText = "⚡ অটো-পোস্ট: OFF";
+        btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 transition";
+        badge.classList.add('hidden');
+        clearInterval(countdownInterval);
+        if (heartbeatWorker) heartbeatWorker.postMessage('stop');
+        releaseScreenWakeLockIfPossible();
+        nextScheduledPostTimeMs = 0;
+        persistAutoPostState();
+      }
+    }
+
     window.onload = () => {
       document.getElementById('pageNameInput').value = pageName;
+      const sel = document.getElementById('autoIntervalSelect');
+      if (sel && savedIntervalSec && Array.from(sel.options).some(o => parseInt(o.value, 10) === savedIntervalSec)) {
+        sel.value = String(savedIntervalSec);
+      }
       updateFbStatusUI();
       updateBadges();
-      filterCategory('all');
+      filterCategory('all').then(() => {
+        if (autoPostActive && fbConfig && fbConfig.accessToken) {
+          applyAutoPostActiveUI(true);
+        } else if (autoPostActive && (!fbConfig || !fbConfig.accessToken)) {
+          autoPostActive = false;
+          persistAutoPostState();
+        }
+      });
     };
 
     function logActivity(msg) {
@@ -571,31 +637,12 @@
         return;
       }
 
+      const wasActive = autoPostActive;
       autoPostActive = !autoPostActive;
-      const btn = document.getElementById('autoPostToggleBtn');
-      const badge = document.getElementById('countdownBadge');
-
-      if (autoPostActive) {
-        btn.innerText = "⚡ অটো-পোস্ট: ON";
-        btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg transition";
-        badge.classList.remove('hidden');
-
-        const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
-        secondsRemaining = intervalSec;
-        nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
-        document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
-        logActivity(`অটো-পোস্ট চালু হয়েছে (ব্যাকগ্রাউন্ড ওয়ার্কার সক্রিয়)।`);
-
-        startCountdownLoop();
-      } else {
-        btn.innerText = "⚡ অটো-পোস্ট: OFF";
-        btn.className = "bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold px-4 py-2 rounded-xl border border-slate-700 transition";
-        badge.classList.add('hidden');
-        clearInterval(countdownInterval);
-        if (heartbeatWorker) heartbeatWorker.postMessage('stop');
-        releaseScreenWakeLockIfPossible();
-        nextScheduledPostTimeMs = 0;
-        logActivity("অটো-পোস্ট বন্ধ করা হয়েছে।");
+      savedNextPostMs = 0;
+      applyAutoPostActiveUI(false);
+      if (wasActive && !autoPostActive) {
+        logActivity("অটো-পোস্ট নিজে থেকে বন্ধ করা হয়েছে।");
       }
     }
 
@@ -605,6 +652,7 @@
         secondsRemaining = intervalSec;
         nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
         document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(secondsRemaining);
+        persistAutoPostState();
       }
     }
 
@@ -665,6 +713,12 @@
       }
 
       const nowMs = Date.now();
+      if (!nextScheduledPostTimeMs || nextScheduledPostTimeMs <= 0) {
+        const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10) || 60;
+        nextScheduledPostTimeMs = nowMs + (intervalSec * 1000);
+        persistAutoPostState();
+      }
+
       const remainingSec = Math.ceil((nextScheduledPostTimeMs - nowMs) / 1000);
       secondsRemaining = remainingSec;
 
@@ -675,26 +729,62 @@
           await runAutoPostCycle();
         } finally {
           isPostingInProgress = false;
-          const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10);
+          const intervalSec = parseInt(document.getElementById('autoIntervalSelect').value, 10) || 60;
           secondsRemaining = intervalSec;
           nextScheduledPostTimeMs = Date.now() + (intervalSec * 1000);
+          persistAutoPostState();
         }
       }
 
       document.getElementById('countdownDisplay').innerText = formatSecondsToMMSS(Math.max(0, secondsRemaining));
     }
 
-    document.addEventListener('visibilitychange', async () => {
-      if (!autoPostActive) return;
-      if (document.visibilityState === 'visible') {
-        await requestScreenWakeLockIfPossible();
-        await onBackgroundHeartbeatTick();
-      } else {
-        logActivity("🌙 ট্যাব ব্যাকগ্রাউন্ডে আছে — ব্যাকগ্রাউন্ড টাইমার ও নির্বিঘ্ন পোস্ট মোড সক্রিয়।");
-        setTimeout(() => {
-          if (autoPostActive) onBackgroundHeartbeatTick();
-        }, 400);
+    function ensureAutoPostResumedOnUnlock(triggerSource = "unlock") {
+      const shouldBeActive = localStorage.getItem('auto_post_persisted_active') === '1';
+      const latestNextMs = parseInt(localStorage.getItem('auto_post_persisted_next_ms') || '0', 10);
+      if (latestNextMs > 0) {
+        savedNextPostMs = latestNextMs;
+        nextScheduledPostTimeMs = latestNextMs;
       }
+
+      if (shouldBeActive && fbConfig && fbConfig.accessToken) {
+        if (!autoPostActive) {
+          autoPostActive = true;
+          applyAutoPostActiveUI(true);
+        } else {
+          if (heartbeatWorker) heartbeatWorker.postMessage('start');
+          startCountdownLoop();
+        }
+        onBackgroundHeartbeatTick();
+      }
+    }
+
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState === 'visible') {
+        ensureAutoPostResumedOnUnlock('visibilitychange');
+        if (autoPostActive) {
+          await requestScreenWakeLockIfPossible();
+        }
+      } else if (autoPostActive) {
+        persistAutoPostState();
+        logActivity("🔒 লক/ব্যাকগ্রাউন্ডে গেলেও অটো-পোস্ট সক্রিয় রয়েছে (লক খুললে সাথে সাথে সিঙ্ক ও পোস্ট হবে)।");
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      ensureAutoPostResumedOnUnlock('focus');
+    });
+
+    window.addEventListener('pageshow', () => {
+      ensureAutoPostResumedOnUnlock('pageshow');
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (autoPostActive) persistAutoPostState();
+    });
+
+    window.addEventListener('freeze', () => {
+      if (autoPostActive) persistAutoPostState();
     });
 
     function startCountdownLoop() {
@@ -737,11 +827,15 @@
       logActivity(`🚀 [২৪/৭ বিরতিহীন মোড | ${priorityTag}] পোস্ট হচ্ছে: "${nextNews.title.substring(0, 40)}..."`);
       const postedOk = await postNewsItemToFacebook(nextNews, true);
 
-      if (!postedOk && allFetchedNews.length > 1) {
-        const failedItem = allFetchedNews.shift();
-        allFetchedNews.push(failedItem);
-        renderNewsGrid();
-        logActivity(`⏭️ "${failedItem.title.substring(0, 30)}..." সামনে থেকে সরিয়ে পরবর্তী খবর আনা হয়েছে।`);
+      if (!postedOk) {
+        if (document.visibilityState === 'hidden') {
+          logActivity(`🔒 লক অবস্থায় নেটওয়ার্ক/ব্রাউজার বিরতির কারণে পোস্ট অপেক্ষমাণ রাখা হয়েছে; লক খুললেই পুনরায় চেষ্টা হবে।`);
+        } else if (allFetchedNews.length > 1) {
+          const failedItem = allFetchedNews.shift();
+          allFetchedNews.push(failedItem);
+          renderNewsGrid();
+          logActivity(`⏭️ "${failedItem.title.substring(0, 30)}..." সামনে থেকে সরিয়ে পরবর্তী খবর আনা হয়েছে।`);
+        }
       }
     }
 
